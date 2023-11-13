@@ -1,0 +1,25 @@
+[submodule "third_party/imgui"]
+	path = third_party/imgui
+	url = https://github.com/ocornut/imgui
+	branch = docking
+[submodule "third_party/glfw"]
+	path = third_party/glfw
+	url = https://github.com/glfw/glfw
+[submodule "third_party/spdlog"]
+	path = third_party/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "third_party/vulkan"]
+	path = third_party/vulkan
+	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "third_party/volk"]
+	path = third_party/volk
+	url = https://github.com/zeux/volk
+[submodule "third_party/stb"]
+	path = third_party/stb
+	url = https://github.com/nothings/stb
+[submodule "third_party/tinygltf"]
+	path = third_party/tinygltf
+	url = https://github.com/syoyo/tinygltf
+[submodule "third_party/CTPL"]
+	path = third_party/CTPL
+	url = https://github.com/vit-vit/CTPL

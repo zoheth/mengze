@@ -1,0 +1,7 @@
+build
+out
+.vs
+.vscode
+imgui.ini
+output/*
+
