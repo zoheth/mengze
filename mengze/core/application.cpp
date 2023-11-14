@@ -170,6 +170,7 @@ namespace
 			queue_create_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queue_create_info[0].queueFamilyIndex = s_queue_family;
 			queue_create_info[0].queueCount = 1;
+			queue_create_info[0].pQueuePriorities = queue_priorities;
 			VkDeviceCreateInfo create_info = {};
 			create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 			create_info.queueCreateInfoCount = std::size(queue_create_info);
@@ -206,6 +207,31 @@ namespace
 			check_vk_result(err);
 		}
 	}
+
+	void setup_vulkan_window(VkSurfaceKHR surface, int width, int height)
+	{
+		s_window.Surface = surface;
+
+		VkBool32 res;
+		vkGetPhysicalDeviceSurfaceSupportKHR(s_physical_device, s_queue_family, s_window.Surface, &res);
+		if (res != VK_TRUE)
+		{
+			LOGE("[vulkan] No WSI support on physical device 0");
+			exit(-1);
+		}
+
+		constexpr VkFormat request_surface_image_format[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
+		constexpr VkColorSpaceKHR request_surface_color_space = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+
+		s_window.SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(s_physical_device, s_window.Surface, request_surface_image_format, static_cast<uint32_t>(std::size(request_surface_image_format)), request_surface_color_space);
+
+		VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
+		s_window.PresentMode = ImGui_ImplVulkanH_SelectPresentMode(s_physical_device, s_window.Surface, &present_modes[0], IM_ARRAYSIZE(present_modes));
+
+		assert(s_min_image_count >= 2);
+		ImGui_ImplVulkanH_CreateOrResizeWindow(s_instance, s_physical_device, s_device, &s_window, s_queue_family, s_allocator, width, height, s_min_image_count);
+	}
+
 	void frame_render(ImDrawData* draw_data)
 	{
 		const VkSemaphore image_acquired_semaphore = s_window.FrameSemaphores[s_window.SemaphoreIndex].ImageAcquiredSemaphore;
@@ -271,11 +297,12 @@ namespace
 		vkCmdEndRenderPass(fd->CommandBuffer);
 
 		{
-			VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			constexpr VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			VkSubmitInfo info = {};
 			info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			info.waitSemaphoreCount = 1;
 			info.pWaitSemaphores = &image_acquired_semaphore;
+			info.pWaitDstStageMask = &wait_stage;
 			info.commandBufferCount = 1;
 			info.pCommandBuffers = &fd->CommandBuffer;
 			info.signalSemaphoreCount = 1;
@@ -321,7 +348,6 @@ namespace mengze
 	Application::Application(const ApplicationSpecification& spec)
 		:spec_(spec)
 	{
-
 		init();
 	}
 
@@ -349,8 +375,63 @@ namespace mengze
 		uint32_t extension_count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&extension_count);
 		setup_vulkan(extensions, extension_count);
+		ImGui_ImplVulkan_LoadFunctions([](const char* function_name, void* vulkan_instance) {
+			return vkGetInstanceProcAddr(*(static_cast<VkInstance*>(vulkan_instance)), function_name);
+			}, &s_instance);
 
+		VkSurfaceKHR surface;
+		VkResult err = glfwCreateWindowSurface(s_instance, window_, s_allocator, &surface);
+		check_vk_result(err);
 
+		int w, h;
+		glfwGetFramebufferSize(window_, &w, &h);
+		setup_vulkan_window(surface, w, h);
+
+		s_all_command_buffers.resize(s_window.ImageCount);
+		s_resource_free_queue.resize(s_window.ImageCount);
+
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
+
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
+		ImVec4* colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_TitleBg] = ImVec4(0.09f, 0.09f, 0.09f, 1.0f);
+		colors[ImGuiCol_TitleBgActive] = ImVec4(0.08f, 0.08f, 0.08f, 1.0f);
+		colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.1f, 0.6f);
+		//ImGui::StyleColorsClassic();
+
+		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		ImGui_ImplGlfw_InitForVulkan(window_, true);
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.Instance = s_instance;
+		init_info.PhysicalDevice = s_physical_device;
+		init_info.Device = s_device;
+		init_info.QueueFamily = s_queue_family;
+		init_info.Queue = s_queue;
+		init_info.PipelineCache = s_pipeline_cache;
+		init_info.DescriptorPool = s_descriptor_pool;
+		init_info.Allocator = s_allocator;
+		init_info.MinImageCount = s_min_image_count;
+		init_info.ImageCount = s_window.ImageCount;
+		init_info.CheckVkResultFn = check_vk_result;
+		init_info.Subpass = 0;
+		ImGui_ImplVulkan_Init(&init_info, s_window.RenderPass);
 	}
 
 	void Application::run()

@@ -22,8 +22,6 @@ namespace mengze {
 		~Application();
 
 		void init();
-		void setup_vulkan(const char** extensions, uint32_t extensions_count);
-
 		void run();
 
 	private:
