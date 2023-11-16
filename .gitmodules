@@ -23,3 +23,6 @@
 [submodule "third_party/CTPL"]
 	path = third_party/CTPL
 	url = https://github.com/vit-vit/CTPL
+[submodule "third_party/glm"]
+	path = third_party/glm
+	url = https://github.com/g-truc/glm

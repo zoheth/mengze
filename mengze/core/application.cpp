@@ -11,6 +11,15 @@
 #include "logging.h"
 
 
+void check_vk_result(VkResult err)
+{
+	if (err == 0)
+		return;
+	LOGE("[vulkan] Error: VkResult = {}", err)
+		if (err < 0)
+			abort();
+}
+
 namespace
 {
 	VkAllocationCallbacks* s_allocator = nullptr;
@@ -31,15 +40,7 @@ namespace
 	std::vector<std::vector<std::function<void()>>> s_resource_free_queue;
 	uint32_t s_current_frame_index = 0;
 
-
-	void check_vk_result(VkResult err)
-	{
-		if (err == 0)
-			return;
-		LOGE("[vulkan] Error: VkResult = {}", err)
-			if (err < 0)
-				abort();
-	}
+	mengze::Application* s_application = nullptr;
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -345,14 +346,23 @@ namespace
 
 namespace mengze
 {
-	Application::Application(const ApplicationSpecification& spec)
-		:spec_(spec)
+	Application::Application(ApplicationSpecification spec)
+		:spec_(std::move(spec))
 	{
+		s_application = this;
 		init();
 	}
 
 	Application::~Application()
 	{
+		shutdown();
+
+		s_application = nullptr;
+	}
+
+	Application& Application::get()
+	{
+		return *s_application;
 	}
 
 	void Application::init()
@@ -510,6 +520,8 @@ namespace mengze
 					ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 				}
 
+				for (const auto& layer:layers_)
+					layer->on_ui_render();
 				ImGui::End();
 			}
 
@@ -533,5 +545,111 @@ namespace mengze
 				frame_present();
 
 		}
+	}
+
+	void Application::shutdown()
+	{
+		for (auto& layer : layers_)
+		{
+			layer->on_detach();
+		}
+
+		layers_.clear();
+
+		VkResult err = vkDeviceWaitIdle(s_device);
+		check_vk_result(err);
+
+		for(auto& queue : s_resource_free_queue)
+		{
+			for (auto& func : queue)
+				func();
+		}
+		s_resource_free_queue.clear();
+
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+
+		ImGui_ImplVulkanH_DestroyWindow(s_instance, s_device, &s_window, s_allocator);
+
+		vkDestroyDescriptorPool(s_device, s_descriptor_pool, s_allocator);
+#ifdef MZ_DEBUG
+		vkDestroyDebugUtilsMessengerEXT(s_instance, s_debug_utils, s_allocator);
+#endif
+		vkDestroyDevice(s_device, s_allocator);
+		vkDestroyInstance(s_instance, s_allocator);
+
+		glfwDestroyWindow(window_);
+		glfwTerminate();
+	}
+
+	VkInstance Application::get_instance()
+	{
+		return s_instance;
+	}
+
+	VkDevice Application::get_device()
+	{
+		return s_device;
+	}
+
+	VkPhysicalDevice Application::get_physical_device()
+	{
+		return s_physical_device;
+	}
+
+	VkCommandBuffer Application::get_command_buffer(bool begin)
+	{
+		VkCommandPool command_pool = s_window.Frames[s_window.FrameIndex].CommandPool;
+
+		VkCommandBufferAllocateInfo alloc_info = {};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.commandPool = command_pool;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandBufferCount = 1;
+
+		VkCommandBuffer& command_buffer = s_all_command_buffers[s_window.FrameIndex].emplace_back();
+		VkResult err = vkAllocateCommandBuffers(s_device, &alloc_info, &command_buffer);
+		check_vk_result(err);
+
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags |= begin ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0;
+		err = vkBeginCommandBuffer(command_buffer, &begin_info);
+		check_vk_result(err);
+
+		return command_buffer;
+	}
+
+	void Application::flush_command_buffer(VkCommandBuffer command_buffer)
+	{
+		constexpr uint64_t fence_timeout = 100000000;
+
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &command_buffer;
+		VkResult err = vkEndCommandBuffer(command_buffer);
+		check_vk_result(err);
+
+		VkFenceCreateInfo fence_info = {};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = 0;
+		VkFence fence;
+		err = vkCreateFence(s_device, &fence_info, s_allocator, &fence);
+		check_vk_result(err);
+
+		err = vkQueueSubmit(s_queue, 1, &submit_info, fence);
+		check_vk_result(err);
+
+		err = vkWaitForFences(s_device, 1, &fence, VK_TRUE, fence_timeout);
+		check_vk_result(err);
+
+		vkDestroyFence(s_device, fence, s_allocator);
+	}
+
+	void Application::submit_resource_free(const std::function<void()>& func)
+	{
+		s_resource_free_queue[s_current_frame_index].emplace_back(func);
 	}
 }

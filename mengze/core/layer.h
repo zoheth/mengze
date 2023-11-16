@@ -4,8 +4,8 @@ namespace mengze {
 	class Layer
 	{
 	public:
-		Layer(const std::string& name = "Layer") : name_(name) {}
-		virtual ~Layer();
+		explicit Layer(std::string name = "Layer") : name_(std::move(name)) {}
+		virtual ~Layer() = default;
 
 		virtual void on_attach() {}
 		virtual void on_detach() {}
@@ -13,7 +13,7 @@ namespace mengze {
 		virtual void on_ui_render() {}
 		virtual void on_event() {}
 
-		inline const std::string& name() const { return name_; }
+		const std::string& name() const { return name_; }
 
 	protected:
 		std::string name_;
