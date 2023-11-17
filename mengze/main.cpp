@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "core/application.h"
 #include "rendering/renderer.h"
+#include "rendering/render_layer.h"
 
 class SimpleRenderer : public mengze::Renderer
 {
@@ -16,40 +17,10 @@ std::unique_ptr<mengze::Application> mengze::create_application(int argc, char**
 	return std::make_unique<mengze::Application>();
 }
 
-class SandboxLayer : public mengze::Layer
-{
-	public:
-	SandboxLayer() : Layer("Sandbox") {}
-	void on_update() override
-	{
-	}
-
-	void on_ui_render() override
-	{
-		ImGui::Begin("Viewport");
-		viewport_width_ = static_cast<uint32_t>(ImGui::GetContentRegionAvail().x);
-		viewport_height_ = static_cast<uint32_t>(ImGui::GetContentRegionAvail().y);
-
-		renderer_.on_resize(viewport_width_, viewport_height_);
-		auto image = renderer_.render();
-
-		if(image)
-		{
-			ImGui::Image((void*)image->get_descriptor_set(), ImVec2(viewport_width_, viewport_height_), ImVec2(0, 1), ImVec2(1, 0));
-		}
-		ImGui::End();
-	}
-
-private:
-	uint32_t viewport_width_ {0};
-	uint32_t viewport_height_ {0};
-
-	SimpleRenderer renderer_;
-};
-
 int main(int argc, char** argv)
 {
 	auto app = mengze::create_application(argc, argv);
-	app->push_layer<SandboxLayer>();
+
+	app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
 	app->run();
 }

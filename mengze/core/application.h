@@ -34,11 +34,19 @@ namespace mengze {
 
 		void shutdown();
 
-		template<typename T>
-		void push_layer()
+		/**
+		 * Adds a new layer of type T to the application.
+		 *
+		 * Usage:
+		 *   push_layer<LayerType>(constructor_arg1, constructor_arg2, ...);
+		 * where LayerType is a subclass of Layer and constructor_arg1, constructor_arg2, ...,
+		 * are the arguments required by the constructor of LayerType.
+		 */
+		template<typename T, typename... Args>
+		void push_layer(Args&&... args)
 		{
-			static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
-			layers_.emplace_back(std::make_unique<T>());
+			static_assert(std::is_base_of_v<Layer, T>, "Pushed type is not subclass of Layer!");
+			layers_.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
 			layers_.back()->on_attach();
 		}
 
