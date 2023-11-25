@@ -4,8 +4,8 @@
 
 namespace mengze
 {
-	Node::Node(const size_t id, const std::string& name)
-		: id_{ id }, name_{ name }, transform_{ *this }
+	Node::Node(const size_t id, std::string name)
+		: id_{ id }, name_{std::move(name)}, transform_{ *this }
 	{
 		set_component(transform_);
 	}

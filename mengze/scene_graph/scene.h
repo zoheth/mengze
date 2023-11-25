@@ -9,8 +9,6 @@
 
 namespace mengze
 {
-	class Node;
-	class Component;
 
 	class Scene
 	{
@@ -18,10 +16,10 @@ namespace mengze
 		Scene() = default;
 		~Scene() = default;
 
-		Scene(const Scene&) = delete;
-		Scene& operator=(const Scene&) = delete;
-		Scene(Scene&&) = delete;
-		Scene& operator=(Scene&&) = delete;
+		 Scene(const Scene&) = delete;
+		 Scene& operator=(const Scene&) = delete;
+		 Scene(Scene&&) = delete;
+		 Scene& operator=(Scene&&) = delete;
 
 	private:
 		std::string name_;

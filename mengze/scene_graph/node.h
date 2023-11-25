@@ -10,7 +10,7 @@ namespace mengze
 	class Node
 	{
 	public:
-		Node(const size_t id, const std::string& name);
+		Node(const size_t id, std::string name);
 
 		virtual ~Node() = default;
 

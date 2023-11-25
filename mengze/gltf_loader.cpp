@@ -43,13 +43,16 @@ namespace mengze
 			model_path_.clear();
 		}
 
-		return std::make_unique<Scene>(load_scene(scene_index));
+		return load_scene(scene_index);
 	}
 
-	Scene GltfLoader::load_scene(int scene_index)
+	std::unique_ptr<Scene> GltfLoader::load_scene(int scene_index)
 	{
-		auto scene = Scene();
+		auto scene = std::make_unique<Scene>();
 
+
+
+		return scene;
 
 	}
 }
