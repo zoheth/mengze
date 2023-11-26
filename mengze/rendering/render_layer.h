@@ -11,8 +11,9 @@ namespace mengze
 		RenderLayer() = delete;
 		explicit RenderLayer(std::unique_ptr<Renderer> renderer) : Layer("Render"), renderer_(std::move(renderer)) {}
 
-		void on_update() override
+		void on_update(float ts) override
 		{
+			renderer_->on_update(ts);
 		}
 
 		void on_ui_render() override;

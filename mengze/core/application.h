@@ -32,6 +32,8 @@ namespace mengze {
 		void init();
 		void run();
 
+		static float get_time();
+
 		void shutdown();
 
 		/**
@@ -65,6 +67,10 @@ namespace mengze {
 		ApplicationSpecification spec_;
 		GLFWwindow* window_{ nullptr };
 		bool running_{ false };
+
+		float last_frame_time_{ 0.0f };
+		float frame_time_{ 0.0f };
+		float time_step_{ 0.0f };
 
 		std::vector<std::unique_ptr<Layer>> layers_;
 	};

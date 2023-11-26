@@ -10,7 +10,7 @@ namespace mengze {
 
 		virtual void on_attach() {}
 		virtual void on_detach() {}
-		virtual void on_update() {}
+		virtual void on_update(float ts) {}
 		virtual void on_ui_render() {}
 		virtual void on_event() {}
 

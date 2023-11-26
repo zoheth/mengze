@@ -14,6 +14,13 @@ namespace mengze
 		void on_update(float delta_time);
 		void on_resize(uint32_t width, uint32_t height);
 
+		glm::mat4 get_projection_matrix() const { return projection_matrix_; }
+
+		glm::mat4 get_view_matrix() const { return view_matrix_; }
+
+		float get_near() const { return near_; }
+		float get_far() const { return far_; }
+
 	private:
 		void update_projection_matrix();
 		void update_view_matrix();

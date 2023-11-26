@@ -1,0 +1,201 @@
+newmtl Rug
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/rug.png
+newmtl Wood
+Kd 0 0 0
+Ks 0 0 0
+Tr 1 1 1
+Ns 6
+Ni 1
+map_Kd textures/wood.jpg
+newmtl Mirror
+Kd 0 0 0
+Ks 1 1 1
+Tr 1 1 1
+Ns 10000
+Ni 1
+newmtl StainlessSmooth
+Kd 0.2 0.3 0.4
+Ks 0.2 0.3 0.4
+Tr 1 1 1
+Ns 6
+Ni 1
+newmtl Bathtube
+Kd 0.612066 0.612066 0.612066
+Ks 0.612066 0.612066 0.612066
+Tr 1 1 1
+Ns 1000
+Ni 1
+newmtl StainlessRough
+Kd 0.8 0.7 0.8
+Ks 0.8 0.7 0.8
+Tr 1 1 1
+Ns 9
+Ni 1
+newmtl Floor
+Kd 0 0 0
+Ks 0 0 0
+Tr 1 1 1
+Ns 4
+Ni 1
+map_Kd textures/floor_tiles.png
+newmtl Pots
+Kd 0.00631 0.00631 0.00631
+Ks 0.00631 0.00631 0.00631
+Tr 1 1 1
+Ns 9
+Ni 1
+newmtl Marble
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/marble.jpg
+newmtl BulbGlass
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1.5
+newmtl BlackPlastic
+Kd 0.00631 0.00631 0.00631
+Ks 0.00631 0.00631 0.00631
+Tr 1 1 1
+Ns 4
+Ni 1
+newmtl Blinds
+Kd 0.893289 0.893289 0.893289
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl WoodFrame
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/wood2.jpg
+newmtl Painting3
+Kd 0.0581872 0.0342302 0.0179364
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Painting1
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/picture1.jpg
+newmtl Painting4
+Kd 0.0477758 0.0209511 0.00715504
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Light
+Kd 0 0 0
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl GreyWall
+Kd 0.893289 0.893289 0.893289
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl WhiteWood
+Kd 0.893289 0.893289 0.893289
+Ks 0.893289 0.893289 0.893289
+Tr 1 1 1
+Ns 9
+Ni 1
+newmtl Ceiling
+Kd 0.684615 0.684615 0.684615
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Wallpaper
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/wallpaper-1.jpg
+newmtl Leaves
+Kd 0.573159 0.215764 0.022013
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl LeaveStems
+Kd 0.0638149 0.022013 0.00120174
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Vase
+Kd 0.612066 0.612066 0.612066
+Ks 0.612066 0.612066 0.612066
+Tr 1 1 1
+Ns 1000
+Ni 1
+newmtl WindowFrame
+Kd 0.00631 0.00631 0.00631
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Paper
+Kd 0.578596 0.578596 0.578596
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl WoodDiffuse
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/wood.jpg
+newmtl Painting2
+Kd 0.5 0.5 0.5
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+map_Kd textures/wallpaper-2.jpg
+newmtl MetalPlate
+Kd 0 0 0
+Ks 0 0 0
+Tr 1 1 1
+Ns 19
+Ni 1
+newmtl BlindsString
+Kd 0.578596 0.578596 0.578596
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1
+newmtl Gold
+Kd 0 0 0
+Ks 0 0 0
+Tr 1 1 1
+Ns 9
+Ni 1
+newmtl Foam
+Kd 0.531049 0.531049 0.531049
+Ks 0 0 0
+Tr 1 1 1
+Ns 1
+Ni 1

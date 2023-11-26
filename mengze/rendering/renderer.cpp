@@ -31,20 +31,8 @@ namespace mengze
 		film_data_ = new uint32_t[width * height];
 	}
 
-	std::shared_ptr<Image> Renderer::render()
+	void Renderer::set_pixel(uint32_t x, uint32_t y, const glm::vec4& color)
 	{
-		for(uint32_t y = 0; y < film_->get_height(); ++y)
-		{
-			for (uint32_t x = 0; x < film_->get_width(); ++x)
-			{
-				glm::vec4 color = calculate_color(x, y);
-				color = glm::clamp(color, 0.0f, 1.0f);
-				film_data_[y * film_->get_width() + x] = to_rgba(color);
-			}
-		}
-
-		film_->set_data(film_data_);
-
-		return film_;
+		film_data_[y * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
 	}
 }

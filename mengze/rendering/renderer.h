@@ -13,10 +13,14 @@ namespace mengze
 		Renderer() = default;
 		virtual ~Renderer() = default;
 
-		void on_resize(uint32_t width, uint32_t height);
-		std::shared_ptr<Image> render();
+		virtual void on_update(float ts) {}
 
-		virtual glm::vec4 calculate_color(uint32_t x, uint32_t y) = 0;
+		virtual void on_resize(uint32_t width, uint32_t height);
+		virtual void render() = 0;
+
+		void set_pixel(uint32_t x, uint32_t y, const glm::vec4& color);
+
+		void present() { film_->set_data(film_data_); }
 
 		uint32_t get_width() const { return film_->get_width(); }
 		uint32_t get_height() const { return film_->get_height(); }

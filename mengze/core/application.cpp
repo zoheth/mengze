@@ -9,6 +9,7 @@
 #include "backends/imgui_impl_vulkan.h"
 
 #include "logging.h"
+#include "glm/common.hpp"
 
 
 void check_vk_result(VkResult err)
@@ -456,7 +457,7 @@ namespace mengze
 			glfwPollEvents();
 			for (auto& layer : layers_)
 			{
-				layer->on_update();
+				layer->on_update(time_step_);
 			}
 
 			if (s_swapchain_rebuild)
@@ -544,7 +545,16 @@ namespace mengze
 			if (!is_minimized)
 				frame_present();
 
+			float time = get_time();
+			frame_time_ = time - last_frame_time_;
+			time_step_ = glm::min<float>(frame_time_, 0.0333f);
+			last_frame_time_ = time;
 		}
+	}
+
+	float Application::get_time()
+	{
+		return static_cast<float>(glfwGetTime());
 	}
 
 	void Application::shutdown()
