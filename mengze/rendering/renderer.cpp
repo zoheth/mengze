@@ -2,12 +2,12 @@
 
 namespace 
 {
-	uint32_t to_rgba(const glm::vec4& color)
+	uint32_t to_rgba(const glm::vec3& color)
 	{
 		uint32_t r = static_cast<uint32_t>(color.r * 255.0f);
 		uint32_t g = static_cast<uint32_t>(color.g * 255.0f);
 		uint32_t b = static_cast<uint32_t>(color.b * 255.0f);
-		uint32_t a = static_cast<uint32_t>(color.a * 255.0f);
+		uint32_t a = 0xff;
 		return (a << 24) | (b << 16) | (g << 8) | r;
 	}
 }
@@ -31,7 +31,7 @@ namespace mengze
 		film_data_ = new uint32_t[width * height];
 	}
 
-	void Renderer::set_pixel(uint32_t x, uint32_t y, const glm::vec4& color)
+	void Renderer::set_pixel(uint32_t x, uint32_t y, const glm::vec3& color)
 	{
 		film_data_[y * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
 	}

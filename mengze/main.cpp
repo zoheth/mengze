@@ -4,6 +4,7 @@
 #include "rendering/render_layer.h"
 
 #include "zbuffer.h"
+#include "visible_surface_determination/scanline_zbuffer.h"
 
 class SimpleRenderer : public mengze::Renderer
 {
@@ -18,8 +19,7 @@ public:
 					{
 						static_cast<float>(x) / static_cast<float>(get_width()),
 						static_cast<float>(y) / static_cast<float>(get_height()),
-						0.5f,
-						1.0f
+						0.5f
 					});
 			}
 		}

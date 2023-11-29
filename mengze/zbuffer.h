@@ -84,7 +84,7 @@ public:
 
                         if (z_value < depth_buffer_[screen_y * get_width() + screen_x])
                         {
-                            set_pixel(screen_x, screen_y, glm::vec4(glm::vec3(linearized_z_value), 1.0));
+                            set_pixel(screen_x, screen_y, glm::vec3(linearized_z_value));
                             depth_buffer_[screen_y * get_width() + screen_x] = z_value;
                         }
                     }
