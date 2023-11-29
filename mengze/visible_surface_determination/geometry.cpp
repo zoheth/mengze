@@ -32,16 +32,27 @@ namespace mengze
 			}
 			else if (prefix == "f")
 			{
-				Triangle triangle;
 				std::string vertex;
+				uint32_t i = 0;
 				while (iss >> vertex)
 				{
+					if (i++ > 3)
+					{
+						LOGE("Only support triangle");
+					}
 					std::istringstream vertex_stream(vertex);
-					int vertex_index;
+					uint32_t vertex_index;
 					vertex_stream >> vertex_index;
-					triangle.add_vertex(vertices_[vertex_index - 1]);
+					while (vertex_stream.peek() == '/')
+					{
+						vertex_stream.ignore();
+						if (vertex_stream.peek() == '/')
+						{
+							vertex_stream.ignore();
+						}
+					}
+					indices_.push_back(vertex_index);
 				}
-				triangles_.push_back(triangle);
 			}
 		}
 
@@ -60,7 +71,7 @@ namespace mengze
 			int end = (i == num_threads - 1) ? num_vertices : (i + 1) * chunk_size;
 			futures.push_back(pool.push([this, func, start, end](int) {
 				transform_vertices_range(this->vertices_, func, start, end);
-			}));
+				}));
 		}
 
 		for (auto& future : futures) {

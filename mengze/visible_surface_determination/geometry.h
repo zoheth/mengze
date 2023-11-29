@@ -43,9 +43,9 @@ namespace mengze
 	public:
 		Geometry(const std::string& path);
 
-		std::vector<Triangle>& get_triangles() { return triangles_; }
-
 		std::vector<glm::vec3>& get_vertices() { return vertices_; }
+
+		std::vector<uint32_t>& get_indices() { return indices_; }
 
 		void transform_vertices_multithreaded(
 			std::function<glm::vec3(const glm::vec3&)> func,
@@ -55,7 +55,7 @@ namespace mengze
 
 	private:
 		std::vector<glm::vec3> vertices_;
-		std::vector<Triangle> triangles_;
+		std::vector<uint32_t> indices_;
 	};
 
 }
