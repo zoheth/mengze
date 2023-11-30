@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 #include <list>
+#include <cmath>
 
 #include "geometry.h"
 
@@ -36,68 +38,52 @@ namespace mengze
 		std::vector<std::list<Triangle>> table_;
 	};
 
-	class Edge
+	struct Edge
 	{
-	public:
-		Edge(float y_max, float x_start, float inverse_slope)
-			: y_max_(y_max), x_current_(x_start), inverse_slope_(inverse_slope) {}
+		float x_start;
+		float delta_x;
+		float remain_height;
 
-		float y_max() const { return y_max_; }
-		float x_current() const { return x_current_; }
-		float inverse_slope() const { return inverse_slope_; }
-
-		void update_x_current() { x_current_ += inverse_slope_; }
-
-	private:
-		float y_max_;
-		float x_current_;
-		float inverse_slope_;
+		float z_start;
+		float delta_z_x;
+		float delta_z_y;
 	};
 
-	class EdgeTable
-	{
+	class ActiveEdgeTable {
 	public:
-		explicit EdgeTable(uint32_t height) : table_(height) {}
-
-		void add_edge(const Edge& edge)
+		void add_edge_pair(const Triangle& triangle)
 		{
-			uint32_t y = static_cast<uint32_t>(edge.y_max());
-			if (y < static_cast<uint32_t>(table_.size()))
-			{
-				table_[y].push_back(edge);
-			}
-		}
+			auto vertices = triangle.vertices;
+			std::sort(vertices.begin(), vertices.end(), [](const glm::vec3& v1, const glm::vec3& v2) {
+				return v1.y < v2.y;
+			});
 
-		const std::list<Edge>& operator[](uint32_t y) const { return table_[y]; }
-
-		void sort()
-		{
-			for (auto& row : table_)
+			for (uint32_t i =0; i<3;++i)
 			{
-				row.sort([](const Edge& lhs, const Edge& rhs) {
-					return lhs.x_current() < rhs.x_current();
-					});
-			}
-		}
+				const uint32_t next = (i + 1) % 3;
 
-		void update_x_current()
-		{
-			for (auto& row : table_)
-			{
-				for (auto& edge : row)
+				if (vertices[i].y == vertices[next].y)
 				{
-					edge.update_x_current();
+					continue;
+				}
+				if(scanline_y_ >= std::min(vertices[i].y, vertices[next].y)
+					&& scanline_y_ <= std::max(vertices[i].y, vertices[next].y))
+				{
+					Edge edge;
+					edge.remain_height = std::abs(vertices[i].y - vertices[next].y);
+					edge.x_start = vertices[i].x;
+					edge.delta_x = (vertices[next].x - vertices[i].x) / edge.remain_height;
+					edge.z_start = vertices[i].z;
+					//edge.delta_z_x = (vertices[next].z - vertices[i].z) / std::abs();
+					edge.delta_z_y = (vertices[next].z - vertices[i].z) / edge.remain_height;
+					edges_.push_back(edge);
 				}
 			}
+			assert(edges_.size() % 2 == 0);
 		}
-
-		void remove_edges_below(uint32_t y)
-		{
-			table_.erase(table_.begin(), table_.begin() + y);
-		}
-
 
 	private:
-		std::vector<std::list<Edge>> table_;
+		std::list<Edge> edges_;
+		uint32_t scanline_y_;
 	};
 }

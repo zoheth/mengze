@@ -18,6 +18,8 @@ namespace mengze
 		virtual void on_resize(uint32_t width, uint32_t height);
 		virtual void render() = 0;
 
+		void clear(const glm::vec3& color);
+
 		void set_pixel(uint32_t x, uint32_t y, const glm::vec3& color);
 
 		void present() { film_->set_data(film_data_); }

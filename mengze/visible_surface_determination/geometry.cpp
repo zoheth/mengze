@@ -2,9 +2,65 @@
 
 namespace mengze
 {
+	TriangleIterator::TriangleIterator(const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& vertices,
+		size_t position): indices_(indices), vertices_(vertices), position_(position)
+	{}
+
+	bool TriangleIterator::operator!=(const TriangleIterator& other) const
+	{
+		return position_ != other.position_;
+	}
+
+	TriangleIterator& TriangleIterator::operator++()
+	{
+		position_ += 3;
+		return *this;
+	}
+
+	Triangle TriangleIterator::operator*() const
+	{
+		Triangle triangle(vertices_[indices_[position_]],
+		                  vertices_[indices_[position_ + 1]],
+		                  vertices_[indices_[position_ + 2]]);
+		return triangle;
+	}
+
 	Geometry::Geometry(const std::string& path)
 	{
 		parse_obj(path);
+	}
+
+	Triangle Geometry::get_triangle(uint32_t index, const std::vector<glm::vec3>* p_vertices) const
+	{
+		assert(index < num_triangles_);
+		if (p_vertices)
+		{
+			assert(vertices_.size() == p_vertices->size());
+			return { p_vertices->at(indices_[index * 3]), p_vertices->at(indices_[index * 3 + 1]), p_vertices->at(indices_[index * 3 + 2]) };
+		}
+		return { vertices_[indices_[index * 3]],
+						vertices_[indices_[index * 3 + 1]],
+						vertices_[indices_[index * 3 + 2]] };
+	}
+
+	TriangleIterator Geometry::triangles_begin(const std::vector<glm::vec3>* p_vertices) const
+	{
+		if (p_vertices)
+		{
+			assert(vertices_.size() == p_vertices->size());
+			return TriangleIterator(indices_, *p_vertices, 0);
+		}
+		return TriangleIterator(indices_, vertices_, 0);
+	}
+
+	TriangleIterator Geometry::triangles_end(const std::vector<glm::vec3>* p_vertices) const
+	{
+		if (p_vertices)
+		{
+			assert(vertices_.size() == p_vertices->size());
+			return TriangleIterator(indices_, *p_vertices, indices_.size());
+		}
+		return TriangleIterator(indices_, vertices_, indices_.size());
 	}
 
 	void Geometry::parse_obj(const std::string& path)
@@ -51,31 +107,11 @@ namespace mengze
 							vertex_stream.ignore();
 						}
 					}
-					indices_.push_back(vertex_index);
+					indices_.push_back(vertex_index-1);
 				}
 			}
 		}
+		num_triangles_ = indices_.size() / 3;
 
-	}
-
-	void Geometry::transform_vertices_multithreaded(std::function<glm::vec3(const glm::vec3&)> func,
-		int num_threads)
-	{
-		ctpl::thread_pool pool(num_threads);
-		const int num_vertices = vertices_.size();
-		const int chunk_size = num_vertices / num_threads;
-
-		std::vector<std::future<void>> futures;
-		for (int i = 0; i < num_threads; ++i) {
-			int start = i * chunk_size;
-			int end = (i == num_threads - 1) ? num_vertices : (i + 1) * chunk_size;
-			futures.push_back(pool.push([this, func, start, end](int) {
-				transform_vertices_range(this->vertices_, func, start, end);
-				}));
-		}
-
-		for (auto& future : futures) {
-			future.get();
-		}
 	}
 }

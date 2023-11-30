@@ -3,8 +3,8 @@
 #include "rendering/renderer.h"
 #include "rendering/render_layer.h"
 
-#include "zbuffer.h"
 #include "visible_surface_determination/scanline_zbuffer.h"
+#include "visible_surface_determination/naive_zbuffer.h"
 
 class SimpleRenderer : public mengze::Renderer
 {
@@ -37,6 +37,7 @@ int main(int argc, char** argv)
 
 	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
 	auto camera = mengze::Camera(45.0f, 0.1f, 100.0f);
-	app->push_layer<mengze::RenderLayer>(std::make_unique<ZbufferRenderer>(camera));
+	auto geometry = mengze::Geometry("scenes\\cube.obj");
+	app->push_layer<mengze::RenderLayer>(std::make_unique<mengze::NaiveZbufferRenderer>(camera, geometry));
 	app->run();
 }

@@ -7,10 +7,10 @@
 
 namespace mengze
 {
-	class ZbufferRenderer : public Renderer
+	class ScanlineZbufferRenderer : public Renderer
 	{
 	public:
-		explicit ZbufferRenderer(Camera& camera, Geometry& geometry) : camera_(camera), geometry_(geometry)
+		explicit ScanlineZbufferRenderer(Camera& camera, Geometry& geometry) : camera_(camera), geometry_(geometry)
 		{
 			screen_vertices_.resize(geometry_.get_vertices().size());
 		}
@@ -48,68 +48,7 @@ namespace mengze
 
 		void render() override
 		{
-			EdgeTable edge_table(get_height());
 
-			constexpr float epsilon = 1e-6f;
-			for(uint32_t i = 0; i<screen_vertices_.size(); i+=3)
-			{
-				const glm::vec3& p1 = screen_vertices_[i];
-				const glm::vec3& p2 = screen_vertices_[i + 1];
-				const glm::vec3& p3 = screen_vertices_[i + 2];
-
-				const float y_max = std::max(p1.y, std::max(p2.y, p3.y));
-				const float x_start = std::min(p1.x, std::min(p2.x, p3.x));
-				const float x_end = std::max(p1.x, std::max(p2.x, p3.x));
-
-				const float inverse_slope_1 = (p2.y - p1.y) > epsilon ? (p2.x - p1.x) / (p2.y - p1.y) : 0;
-				const float inverse_slope_2 = (p3.y - p2.y) > epsilon ? (p3.x - p2.x) / (p3.y - p2.y) : 0;
-				const float inverse_slope_3 = (p1.y - p3.y) > epsilon ? (p1.x - p3.x) / (p1.y - p3.y) : 0;
-
-				Edge edge_1(y_max, x_start, inverse_slope_1);
-				Edge edge_2(y_max, x_start, inverse_slope_2);
-				Edge edge_3(y_max, x_start, inverse_slope_3);
-
-				edge_table.add_edge(edge_1);
-				edge_table.add_edge(edge_2);
-				edge_table.add_edge(edge_3);
-			}
-
-			edge_table.sort();
-
-
-			for (uint32_t y = 0; y < get_height(); ++y) {
-
-				std::list<Edge> active_edge_table = edge_table[y];
-
-				auto it = active_edge_table.begin();
-				while (it != active_edge_table.end()) {
-					const float x_start = it->x_current();
-					++it;
-					if (it == active_edge_table.end()) break;
-					const float x_end = it->x_current();
-					++it;
-
-					for (auto x = static_cast<uint32_t>(x_start); x < static_cast<uint32_t>(x_end); ++x) {
-
-						float pixel_depth = CalculatePixelDepth(x, y);
-
-						if (pixel_depth < depth_buffer_[y * get_width() + x]) {
-							depth_buffer_[y * get_width() + x] = pixel_depth;
-
-							set_pixel(x, y, glm::vec3(1.0f - pixel_depth));
-						}
-					}
-				}
-				active_edge_table.remove_if([y](const Edge& edge) {
-					return static_cast<uint32_t>(edge.y_max()) <= y;
-					});
-
-				for (auto& edge : active_edge_table) {
-					edge.update_x_current();
-				}
-
-				edge_table.remove_edges_below(y + 1);
-			}
 
 		}
 

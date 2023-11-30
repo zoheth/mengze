@@ -31,6 +31,15 @@ namespace mengze
 		film_data_ = new uint32_t[width * height];
 	}
 
+	void Renderer::clear(const glm::vec3& color)
+	{
+		uint32_t rgba = to_rgba(color);
+		for (uint32_t i = 0; i < film_->get_width() * film_->get_height(); ++i)
+		{
+			film_data_[i] = rgba;
+		}
+	}
+
 	void Renderer::set_pixel(uint32_t x, uint32_t y, const glm::vec3& color)
 	{
 		film_data_[y * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
