@@ -3,87 +3,109 @@
 #include <algorithm>
 #include <vector>
 #include <list>
-#include <cmath>
 
 #include "geometry.h"
 
 namespace mengze
 {
-	class TriangleTable {
-	public:
-		explicit TriangleTable(uint32_t height)
-			: table_(height){}
-
-		void AddTriangle(const Triangle& triangle) {
-			float min_y = std::min({ triangle.vertices[0].y, triangle.vertices[1].y, triangle.vertices[2].y });
-			float max_y = std::max({ triangle.vertices[0].y, triangle.vertices[1].y, triangle.vertices[2].y });
-
-			min_y = std::max(min_y, 0.0f);
-			max_y = std::min(max_y, static_cast<float>(table_.size()) - 1);
-
-			for (auto y = static_cast<uint32_t>(min_y); y <= static_cast<uint32_t>(max_y); ++y) {
-				table_[y].push_back(triangle);
-			}
-		}
-
-		void clear(uint32_t y) {
-			table_[y].clear();
-		}
-
-		const std::list<Triangle>& operator[](uint32_t y) const {
-			return table_[y];
-		}
-
-	private:
-		std::vector<std::list<Triangle>> table_;
+	struct Polygon
+	{
+		uint32_t id;
+		float a, b, c, d;
+		uint32_t num_y;
 	};
 
 	struct Edge
 	{
-		float x_start;
+		uint32_t polygon_id;
+		uint32_t x_start;
 		float delta_x;
-		float remain_height;
+		uint32_t num_y;
 
-		float z_start;
-		float delta_z_x;
-		float delta_z_y;
+		Edge(glm::vec3 v0, glm::vec3 v1, uint32_t id)
+			// need v0.y < v1.y
+		{
+			x_start = v0.x;
+			float epsilon = 0.0001f;
+			delta_x = (v1.x - v0.x) / ((v1.y - v0.y) + epsilon);
+			num_y = v1.y - v0.y;
+			polygon_id = id;
+		}
 	};
 
-	class ActiveEdgeTable {
-	public:
-		void add_edge_pair(const Triangle& triangle)
+	struct PolygonStorage
+	{
+		std::vector<std::list<Polygon>> polygon_table;
+		std::vector<std::list<Edge>> edge_table;
+
+		PolygonStorage() = delete;
+
+		explicit PolygonStorage(uint32_t y)
 		{
-			auto vertices = triangle.vertices;
-			std::sort(vertices.begin(), vertices.end(), [](const glm::vec3& v1, const glm::vec3& v2) {
-				return v1.y < v2.y;
-			});
-
-			for (uint32_t i =0; i<3;++i)
-			{
-				const uint32_t next = (i + 1) % 3;
-
-				if (vertices[i].y == vertices[next].y)
-				{
-					continue;
-				}
-				if(scanline_y_ >= std::min(vertices[i].y, vertices[next].y)
-					&& scanline_y_ <= std::max(vertices[i].y, vertices[next].y))
-				{
-					Edge edge;
-					edge.remain_height = std::abs(vertices[i].y - vertices[next].y);
-					edge.x_start = vertices[i].x;
-					edge.delta_x = (vertices[next].x - vertices[i].x) / edge.remain_height;
-					edge.z_start = vertices[i].z;
-					//edge.delta_z_x = (vertices[next].z - vertices[i].z) / std::abs();
-					edge.delta_z_y = (vertices[next].z - vertices[i].z) / edge.remain_height;
-					edges_.push_back(edge);
-				}
-			}
-			assert(edges_.size() % 2 == 0);
+			polygon_table.resize(y);
+			edge_table.resize(y);
 		}
 
-	private:
-		std::list<Edge> edges_;
-		uint32_t scanline_y_;
+		void add_triangle(const Triangle& triangle, uint32_t index)
+		{
+			auto vertices = triangle.vertices;
+
+			std::sort(vertices.begin(), vertices.end(), [](const glm::vec3& a, const glm::vec3& b) {
+				return a.y < b.y;
+				});
+
+			glm::vec3 edge1 = vertices[1] - vertices[0];
+			glm::vec3 edge2 = vertices[2] - vertices[0];
+
+			glm::vec3 normal = glm::cross(edge1, edge2);
+			normal = glm::normalize(normal);
+			Polygon polygon;
+			polygon.id = index;
+			polygon.a = normal.x;
+			polygon.b = normal.y;
+			polygon.c = normal.z;
+			polygon.d = -glm::dot(normal, vertices[0]);
+
+			auto y = static_cast<uint32_t>(vertices[0].y);
+			auto max_y = static_cast<uint32_t>(vertices[2].y);
+			polygon.num_y = max_y - y + 1;
+
+			polygon_table[y].push_back(polygon);
+
+
+			edge_table[y].emplace_back(vertices[0], vertices[1], index);
+			edge_table[y].emplace_back(vertices[0], vertices[2], index);
+			edge_table[static_cast<uint32_t>(vertices[1].y)].emplace_back(vertices[1], vertices[2], index);
+
+		}
+	};
+
+
+
+	struct ActiveEdge
+	{
+		std::list<Polygon> polygons;
+		std::list<Edge> edges;
+
+		uint32_t cur_y=-1;
+
+		void update(const PolygonStorage& polygon_storage)
+		{
+			cur_y++;
+			for (auto& polygon : polygons)
+			{
+				polygon.num_y--;
+				if(polygon.num_y<=0)
+				{
+					polygons.remove(polygon);
+				}
+			}
+
+			for (auto polygen : polygon_storage.polygon_table[cur_y])
+			{
+				polygons.push_back(polygen);
+			}
+
+		}
 	};
 }

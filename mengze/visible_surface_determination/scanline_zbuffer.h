@@ -48,7 +48,25 @@ namespace mengze
 
 		void render() override
 		{
+			clear(glm::vec3(0.1f));
+			for (uint32_t i = 0; i < screen_vertices_.size(); ++i)
+			{
+				screen_vertices_[i] = transform_vertex(geometry_.get_vertices()[i]);
+			}
 
+			PolygonStorage polygon_storage(get_height());
+
+			for (uint32_t i = 0; i < geometry_.get_num_triangles(); ++i)
+			{
+				const auto& triangle = geometry_.get_triangle(i, &screen_vertices_);
+				polygon_storage.add_triangle(triangle, i);
+			}
+
+			ActiveEdge active_edges;
+			for(uint32_t y = 0; y<get_height(); ++y)
+			{
+				
+			}
 
 		}
 
