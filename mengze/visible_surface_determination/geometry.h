@@ -32,23 +32,6 @@ namespace mengze
 
 	};
 
-	class TriangleIterator
-	{
-	public:
-		TriangleIterator(const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& vertices, size_t position);
-
-		bool operator!=(const TriangleIterator& other) const;
-
-		TriangleIterator& operator++();
-
-		Triangle operator*() const;
-
-	private:
-		const std::vector<uint32_t>& indices_;
-		const std::vector<glm::vec3>& vertices_;
-		size_t position_;
-	};
-
 
 	class Geometry
 	{
@@ -63,9 +46,6 @@ namespace mengze
 
 		Triangle get_triangle(uint32_t index, const std::vector<glm::vec3>* p_vertices = nullptr) const;
 
-		TriangleIterator triangles_begin(const std::vector<glm::vec3>* p_vertices = nullptr) const;
-
-		TriangleIterator triangles_end(const std::vector<glm::vec3>* p_vertices = nullptr) const;
 
 	private:
 		void parse_obj(const std::string& path);

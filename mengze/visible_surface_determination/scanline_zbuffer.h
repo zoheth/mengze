@@ -20,7 +20,7 @@ namespace mengze
 			glm::vec4 v = camera_.get_projection_matrix() * camera_.get_view_matrix() * glm::vec4(vertex, 1.0f);
 			v /= v.w;
 			v.x = (v.x + 1.0f) * 0.5f * static_cast<float>(get_width());
-			v.y = (1.0f - v.y) * 0.5f * static_cast<float>(get_height());
+			v.y = (1.0f + v.y) * 0.5f * static_cast<float>(get_height());
 			return v;
 		}
 
@@ -29,11 +29,6 @@ namespace mengze
 			camera_.on_update(ts);
 			if (depth_buffer_ && get_width() * get_height() > 0)
 				std::fill_n(depth_buffer_, get_width() * get_height(), std::numeric_limits<float>::max());
-
-			for(uint32_t i = 0;i<screen_vertices_.size();++i)
-			{
-				screen_vertices_[i] = transform_vertex(geometry_.get_vertices()[i]);
-			}
 		}
 
 		void on_resize(uint32_t width, uint32_t height) override
@@ -62,10 +57,27 @@ namespace mengze
 				polygon_storage.add_triangle(triangle, i);
 			}
 
-			ActiveEdge active_edges;
-			for(uint32_t y = 0; y<get_height(); ++y)
+			ActivePolygon active_polygon;
+			for (uint32_t y = 0; y < get_height(); ++y)
 			{
-				
+				active_polygon.update(polygon_storage);
+
+				for (auto& polygon : active_polygon.polygons)
+				{
+					const auto& edge_pair = *polygon.p_edge_pair;
+					float depth = edge_pair.z_left;
+					for (uint32_t x = std::max(0.f, edge_pair.x_left);
+						x < std::min(get_width() - 1, uint32_t(edge_pair.x_right));
+						++x)
+					{
+						if (depth < depth_buffer_[y * get_width() + x])
+						{
+							depth_buffer_[y * get_width() + x] = depth;
+							set_pixel(x, y, glm::vec3(1.0f));
+						}
+						depth += edge_pair.delta_z_x;
+					}
+				}
 			}
 
 		}

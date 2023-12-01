@@ -31,7 +31,7 @@ namespace mengze
 		bool moved = false;
 		const glm::vec3 right_direction = glm::normalize(glm::cross(forward_direction_, up_direction_));
 
-		float speed = 3.0f;
+		float speed = 1.0f;
 
 		if(Input::is_key_pressed(Key::W))
 		{

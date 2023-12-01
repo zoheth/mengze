@@ -2,28 +2,6 @@
 
 namespace mengze
 {
-	TriangleIterator::TriangleIterator(const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& vertices,
-		size_t position): indices_(indices), vertices_(vertices), position_(position)
-	{}
-
-	bool TriangleIterator::operator!=(const TriangleIterator& other) const
-	{
-		return position_ != other.position_;
-	}
-
-	TriangleIterator& TriangleIterator::operator++()
-	{
-		position_ += 3;
-		return *this;
-	}
-
-	Triangle TriangleIterator::operator*() const
-	{
-		Triangle triangle(vertices_[indices_[position_]],
-		                  vertices_[indices_[position_ + 1]],
-		                  vertices_[indices_[position_ + 2]]);
-		return triangle;
-	}
 
 	Geometry::Geometry(const std::string& path)
 	{
@@ -41,26 +19,6 @@ namespace mengze
 		return { vertices_[indices_[index * 3]],
 						vertices_[indices_[index * 3 + 1]],
 						vertices_[indices_[index * 3 + 2]] };
-	}
-
-	TriangleIterator Geometry::triangles_begin(const std::vector<glm::vec3>* p_vertices) const
-	{
-		if (p_vertices)
-		{
-			assert(vertices_.size() == p_vertices->size());
-			return TriangleIterator(indices_, *p_vertices, 0);
-		}
-		return TriangleIterator(indices_, vertices_, 0);
-	}
-
-	TriangleIterator Geometry::triangles_end(const std::vector<glm::vec3>* p_vertices) const
-	{
-		if (p_vertices)
-		{
-			assert(vertices_.size() == p_vertices->size());
-			return TriangleIterator(indices_, *p_vertices, indices_.size());
-		}
-		return TriangleIterator(indices_, vertices_, indices_.size());
 	}
 
 	void Geometry::parse_obj(const std::string& path)

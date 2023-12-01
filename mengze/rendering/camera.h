@@ -34,7 +34,7 @@ namespace mengze
 		float near_{ 0.1f };
 		float far_{ 1000.0f };
 
-		glm::vec3 position_{ 0.0f };
+		glm::vec3 position_{ 0.0f , 0.0f, -0.3f};
 		glm::vec3 up_direction_{ 0.0f, 1.0f, 0.0f };
 		glm::vec3 forward_direction_{ 0.0f , 0.0f,-1.0f };
 
