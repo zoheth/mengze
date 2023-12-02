@@ -38,8 +38,8 @@ int main(int argc, char** argv)
 	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
 	auto camera = mengze::Camera(45.0f, 0.1f, 100.0f);
 	auto geometry = mengze::Geometry("scenes\\bunny.obj");
-	//auto geometry = mengze::Geometry("scenes\\bathroom\\bathroom.obj");
-	//app->push_layer<mengze::RenderLayer>(std::make_unique<mengze::ScanlineZbufferRenderer>(camera, geometry));
-	app->push_layer<mengze::RenderLayer>(std::make_unique<mengze::NaiveZbufferRasterizer>(camera, geometry));
+	// auto geometry = mengze::Geometry("scenes\\bathroom\\bathroom.obj");
+	app->push_layer<mengze::RenderLayer>(std::make_unique<mengze::ScanlineZbufferRasterizer>(camera, geometry));
+	//app->push_layer<mengze::RenderLayer>(std::make_unique<mengze::NaiveZbufferRasterizer>(camera, geometry));
 	app->run();
 }

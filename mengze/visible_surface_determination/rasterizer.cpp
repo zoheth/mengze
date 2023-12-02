@@ -80,6 +80,8 @@ namespace mengze
 		const glm::vec3& v0 = triangle.vertices[0];
 		const glm::vec3& v1 = triangle.vertices[1];
 		const glm::vec3& v2 = triangle.vertices[2];
+		if (v0.z < 0.f || v0.z>1.f || v1.z < 0.f || v1.z>1.f || v2.z < 0.f || v2.z>1.f)
+			return false;
 		if (!check_triangle_vertices(v0, v1, v2))
 			return false;
 		float min_x = std::min({ v0.x, v1.x, v2.x });

@@ -1,91 +1,59 @@
 #pragma once
 #include "rendering/camera.h"
-#include "rendering/renderer.h"
+#include "rasterizer.h"
 
 #include "edge_table.h"
 #include "geometry.h"
 
 namespace mengze
 {
-	class ScanlineZbufferRenderer : public Renderer
+	class ScanlineZbufferRasterizer : public Rasterizer
 	{
 	public:
-		explicit ScanlineZbufferRenderer(Camera& camera, Geometry& geometry) : camera_(camera), geometry_(geometry)
+		ScanlineZbufferRasterizer(Camera& camera, Geometry& geometry) : Rasterizer(camera, geometry)
 		{
-			screen_vertices_.resize(geometry_.get_vertices().size());
 		}
 
-		glm::vec3 transform_vertex(const glm::vec3& vertex) const
+		void render_triangle() override
 		{
-			glm::vec4 v = camera_.get_projection_matrix() * camera_.get_view_matrix() * glm::vec4(vertex, 1.0f);
-			v /= v.w;
-			v.x = (v.x + 1.0f) * 0.5f * static_cast<float>(get_width());
-			v.y = (1.0f + v.y) * 0.5f * static_cast<float>(get_height());
-			return v;
-		}
-
-		void on_update(float ts) override
-		{
-			camera_.on_update(ts);
-			if (depth_buffer_ && get_width() * get_height() > 0)
-				std::fill_n(depth_buffer_, get_width() * get_height(), std::numeric_limits<float>::max());
-		}
-
-		void on_resize(uint32_t width, uint32_t height) override
-		{
-			camera_.on_resize(width, height);
-			mengze::Renderer::on_resize(width, height);
-
-			delete[] depth_buffer_;
-			depth_buffer_ = new float[width * height];
-			std::fill_n(depth_buffer_, width * height, std::numeric_limits<float>::max());
-		}
-
-		void render() override
-		{
-			clear(glm::vec3(0.1f));
-			for (uint32_t i = 0; i < screen_vertices_.size(); ++i)
-			{
-				screen_vertices_[i] = transform_vertex(geometry_.get_vertices()[i]);
-			}
 
 			PolygonStorage polygon_storage(get_height());
 
-			for (uint32_t i = 0; i < geometry_.get_num_triangles(); ++i)
+			for (uint32_t i = 0; i < num_triangles_; ++i)
 			{
-				const auto& triangle = geometry_.get_triangle(i, &screen_vertices_);
+				const auto& triangle = get_screen_triangle(i);
+				if (!check_screen_triangle(triangle))
+					continue;
 				polygon_storage.add_triangle(triangle, i);
 			}
 
 			ActivePolygon active_polygon;
+
 			for (uint32_t y = 0; y < get_height(); ++y)
 			{
-				active_polygon.update(polygon_storage);
-
+				active_polygon.update(polygon_storage, y);
 				for (auto& polygon : active_polygon.polygons)
 				{
-					const auto& edge_pair = *polygon.p_edge_pair;
-					float depth = edge_pair.z_left;
-					for (uint32_t x = std::max(0.f, edge_pair.x_left);
-						x < std::min(get_width() - 1, uint32_t(edge_pair.x_right));
-						++x)
+					IntersectionResult info{};
+					if(!polygon.find_intersections(y,info))
+						continue;
+
+					float depth = info.left_z;
+					for (uint32_t x = info.left_x; x < info.right_x; ++x)
 					{
 						if (depth < depth_buffer_[y * get_width() + x])
 						{
 							depth_buffer_[y * get_width() + x] = depth;
-							set_pixel(x, y, glm::vec3(1.0f));
+							Triangle world_triangle = get_world_triangle(polygon.id);
+							glm::vec3 normal = glm::normalize(glm::cross(world_triangle.vertices[1] - world_triangle.vertices[0], world_triangle.vertices[2] - world_triangle.vertices[0]));
+							set_pixel(x, y, simple_shading(normal));
 						}
-						depth += edge_pair.delta_z_x;
+						depth += info.z_increment;
 					}
 				}
 			}
 
 		}
 
-	private:
-		Camera& camera_;
-		Geometry& geometry_;
-		std::vector<glm::vec3> screen_vertices_;
-		float* depth_buffer_{ nullptr };
 	};
 }

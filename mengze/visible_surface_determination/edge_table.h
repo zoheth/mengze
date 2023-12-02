@@ -8,96 +8,79 @@
 
 namespace mengze
 {
-	struct EdgePair;
+	struct IntersectionResult {
+		float left_x;
+		float right_x;
+		double left_z;
+		double z_increment;
+	};
 
-	struct Polygon
-	{
-		uint32_t id;
-		float a, b, c, d;
-		uint32_t num_y;
+
+	struct Polygon {
+
+		Polygon(const Triangle& triangle)
+			: vertices{ triangle.vertices } {
+			calculate_slopes();
+		}
+
+		[[nodiscard]] bool find_intersections(double y, IntersectionResult& result) const {
+			std::vector<glm::vec3> intersections;
+			check_and_add_intersection(vertices[0], vertices[1], y, slopes[0], intersections);
+			check_and_add_intersection(vertices[1], vertices[2], y, slopes[1], intersections);
+			check_and_add_intersection(vertices[2], vertices[0], y, slopes[2], intersections);
+
+			// Ensure exactly two points, duplicating if necessary.
+			if (intersections.size() == 1) {
+				intersections.push_back(intersections.front());
+			}
+			if(intersections.size() != 2)
+			{
+				return false;
+			}
+
+			std::sort(intersections.begin(), intersections.end(),
+				[](const glm::vec3& a, const glm::vec3& b) { return a.x < b.x; });
+
+			float left = std::round(intersections[0].x);
+			float right = std::round(intersections[1].x);
+
+			// Calculate z value and z increment
+			double left_z = intersections[0].z;
+			double z_increment = (intersections[1].z - intersections[0].z) / (right - left);
+
+			result.left_x = left;
+			result.right_x = right;
+			result.left_z = left_z;
+			result.z_increment = z_increment;
+			return true;
+		}
+
 		std::array<glm::vec3, 3> vertices;
-		EdgePair* p_edge_pair{nullptr};
+		int lifetime;
+		std::array<double, 3> slopes;
+		uint32_t id;
 
-	};
-
-	struct Edge
-	{
-		float x_start;
-		float delta_x;
-		uint32_t num_y;
-
-		Edge() = default;
-
-		Edge(glm::vec3 v0, glm::vec3 v1)
-			// need v0.y < v1.y
-		{
-			x_start = v0.x;
-			float epsilon = 0.0001f;
-			delta_x = (v1.x - v0.x) / ((v1.y - v0.y) + epsilon);
-			num_y = static_cast<uint32_t>(v1.y - v0.y);
+	private:
+		void calculate_slopes() {
+			slopes[0] = calculate_slope(vertices[0], vertices[1]);
+			slopes[1] = calculate_slope(vertices[1], vertices[2]);
+			slopes[2] = calculate_slope(vertices[2], vertices[0]);
 		}
-	};
 
-	struct EdgePair
-	{
-		Edge left;
-		Edge right;
-		Edge candidate;
-		float x_left;
-		float x_right;
-		float z_left;
-		float delta_z_x;
-		float delta_z_y;
-		glm::vec3 normal;
-		EdgePair(const Polygon& polygon)
-		{
-			auto vertices = polygon.vertices;
-			std::sort(vertices.begin(), vertices.end(), [](const glm::vec3& a, const glm::vec3& b)
-				{
-					return a.y < b.y;
-				});
-
-			if (vertices[1].x < vertices[2].x)
-			{
-				left = Edge(vertices[0], vertices[1]);
-				right = Edge(vertices[0], vertices[2]);
-			}
-			else
-			{
-				left = Edge(vertices[0], vertices[2]);
-				right = Edge(vertices[0], vertices[1]);
-			}
-			candidate = Edge(vertices[1], vertices[2]);
-
-			normal = glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
-
-			x_left = left.x_start;
-			x_right = right.x_start;
-
-
-			z_left = -polygon.d - polygon.a * vertices[0].x - polygon.b * vertices[0].y;
-			delta_z_x = -polygon.a / polygon.c;
-			delta_z_y = -polygon.b / polygon.c;
+		static double calculate_slope(const glm::vec3& p1, const glm::vec3& p2) {
+			if (p2.y == p1.y) return std::numeric_limits<double>::infinity();
+			return (p2.x - p1.x) / (p2.y - p1.y);
 		}
-		// false to delete
-		void update()
-		{
-			left.num_y--;
-			right.num_y--;
 
-			if (left.num_y <= 0)
-			{
-				left = candidate;
-			}
-			else if (right.num_y <= 0)
-			{
-				right = candidate;
-			}
-			x_left += left.delta_x;
-			x_right += right.delta_x;
-			z_left += delta_z_x * left.delta_x + delta_z_y;
-			
+		static void check_and_add_intersection(const glm::vec3& p1, const glm::vec3& p2, double y, double slope,
+			std::vector<glm::vec3>& intersections) {
 
+			if ((p1.y - y) * (p2.y - y) <= 0) { // Check if y is between p1.y and p2.y
+
+				double x = p1.x + (y - p1.y) * slope;
+				double z = p1.z + (x - p1.x) * (p2.z - p1.z) / (p2.x - p1.x);  // Linear interpolation for z
+				intersections.emplace_back(x, y, z);
+			}
 		}
 	};
 
@@ -105,47 +88,23 @@ namespace mengze
 	{
 		std::vector<std::list<Polygon>> polygon_table;
 		// std::vector<std::list<Edge>> edge_table;
-		uint32_t max_y;
 
 		PolygonStorage() = delete;
 
 		explicit PolygonStorage(uint32_t y)
 		{
-			max_y = y-1;
 			polygon_table.resize(y);
 			// edge_table.resize(y);
 		}
 
 		void add_triangle(const Triangle& triangle, uint32_t index)
 		{
-			auto vertices = triangle.vertices;
-
-			std::sort(vertices.begin(), vertices.end(), [](const glm::vec3& a, const glm::vec3& b) {
-				return a.y < b.y;
-				});
-			if(vertices[0].y<0 || vertices[2].y>max_y)
-			{
-				return;
-			}
-
-			glm::vec3 edge1 = vertices[1] - vertices[0];
-			glm::vec3 edge2 = vertices[2] - vertices[0];
-
-			glm::vec3 normal = glm::cross(edge1, edge2);
-			normal = glm::normalize(normal);
-			Polygon polygon;
+			float y_max = std::max({ triangle.vertices[0].y, triangle.vertices[1].y, triangle.vertices[2].y });
+			float y_min = std::min({ triangle.vertices[0].y, triangle.vertices[1].y, triangle.vertices[2].y });
+			Polygon polygon(triangle);
+			polygon.lifetime = std::floor(y_max) - std::ceil(y_min)+1;
 			polygon.id = index;
-			polygon.a = normal.x;
-			polygon.b = normal.y;
-			polygon.c = normal.z;
-			polygon.d = -glm::dot(normal, vertices[0]);
-
-			auto y = static_cast<uint32_t>(vertices[0].y);
-			auto max_y = static_cast<uint32_t>(vertices[2].y);
-			polygon.num_y = max_y - y + 1;
-			polygon.vertices = vertices;
-
-			polygon_table[y].push_back(polygon);
+			polygon_table[std::ceil(y_min)].push_back(polygon);
 
 		}
 	};
@@ -154,29 +113,23 @@ namespace mengze
 	{
 		std::list<Polygon> polygons;
 
-		uint32_t cur_y = -1;
-
-		void update(const PolygonStorage& polygon_storage)
+		void update(const PolygonStorage& polygon_storage, uint32_t cur_y)
 		{
-			cur_y++;
 			for (auto it = polygons.begin(); it != polygons.end(); /* no increment here */)
 			{
-				it->num_y--;
-				if (it->num_y <= 0)
+				it->lifetime--;
+				if (it->lifetime <= 0)
 				{
-					delete it->p_edge_pair;
 					it = polygons.erase(it);
 				}
 				else
 				{
-					it->p_edge_pair->update();
 					++it;
 				}
 			}
 
 			for (auto polygon : polygon_storage.polygon_table[cur_y])
 			{
-				polygon.p_edge_pair = new EdgePair(polygon);
 				polygons.push_back(polygon);
 			}
 

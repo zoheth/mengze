@@ -12,74 +12,15 @@ namespace mengze
 	Camera::Camera(float fov, float near, float far)
 		: fov_(fov), near_(near), far_(far)
 	{
+		update_view_matrix();
 	}
 
 	void Camera::on_update(float delta_time)
 	{
-		glm::vec2 mouse_pos = Input::get_mouse_position();
-		glm::vec2 delta = (mouse_pos - last_mouse_position_) * 0.05f;
-		last_mouse_position_ = mouse_pos;
-
-		if(!Input::is_mouse_button_pressed(MouseButton::Right))
-		{
-			Input::set_mouse_cursor(CursorMode::Normal);
-			return;
-		}
-
-		Input::set_mouse_cursor(CursorMode::Locked);
-
-		bool moved = false;
-		const glm::vec3 right_direction = glm::normalize(glm::cross(forward_direction_, up_direction_));
-
-		float speed = 1.0f;
-
-		if(Input::is_key_pressed(Key::W))
-		{
-			position_ += forward_direction_ * speed * delta_time;
-			moved = true;
-		}
-		else if(Input::is_key_pressed(Key::S))
-		{
-			position_ -= forward_direction_ * speed * delta_time;
-			moved = true;
-		}
-		if(Input::is_key_pressed(Key::A))
-		{
-			position_ -= right_direction * speed * delta_time;
-			moved = true;
-		}
-		else if(Input::is_key_pressed(Key::D))
-		{
-			position_ += right_direction * speed * delta_time;
-			moved = true;
-		}
-		if(Input::is_key_pressed(Key::Q))
-		{
-			position_ -= up_direction_ * speed * delta_time;
-			moved = true;
-		}
-		else if(Input::is_key_pressed(Key::E))
-		{
-			position_ += up_direction_ * speed * delta_time;
-			moved = true;
-		}
-
-		if(delta.x != 0.0f || delta.y != 0.0f)
-		{
-			moved = true;
-			glm::quat yaw = glm::angleAxis(glm::radians(delta.x), up_direction_);
-			glm::quat pitch = glm::angleAxis(glm::radians(delta.y), right_direction);
-
-			forward_direction_ = glm::normalize(yaw * forward_direction_ * pitch);
-
-			moved = true;
-		}
-
-		if(moved)
-		{
-			update_view_matrix();
-			update_projection_matrix();
-		}
+		if(mode_ == CameraMode::ROAMING)
+			roaming_update(delta_time);
+		else if (mode_ == CameraMode::ORBIT)
+			orbit_update(delta_time);
 		
 	}
 
@@ -92,6 +33,78 @@ namespace mengze
 		viewport_height_ = height;
 
 		update_projection_matrix();
+	}
+
+	void Camera::roaming_update(float delta_time)
+	{
+		glm::vec2 mouse_pos = Input::get_mouse_position();
+		glm::vec2 delta = (mouse_pos - last_mouse_position_) * 0.05f;
+		last_mouse_position_ = mouse_pos;
+
+		if (!Input::is_mouse_button_pressed(MouseButton::Right))
+		{
+			Input::set_mouse_cursor(CursorMode::Normal);
+			return;
+		}
+
+		Input::set_mouse_cursor(CursorMode::Locked);
+
+		bool moved = false;
+		const glm::vec3 right_direction = glm::normalize(glm::cross(forward_direction_, up_direction_));
+
+		float speed = 1.0f;
+
+		if (Input::is_key_pressed(Key::W))
+		{
+			position_ += forward_direction_ * speed * delta_time;
+			moved = true;
+		}
+		else if (Input::is_key_pressed(Key::S))
+		{
+			position_ -= forward_direction_ * speed * delta_time;
+			moved = true;
+		}
+		if (Input::is_key_pressed(Key::A))
+		{
+			position_ -= right_direction * speed * delta_time;
+			moved = true;
+		}
+		else if (Input::is_key_pressed(Key::D))
+		{
+			position_ += right_direction * speed * delta_time;
+			moved = true;
+		}
+		if (Input::is_key_pressed(Key::Q))
+		{
+			position_ -= up_direction_ * speed * delta_time;
+			moved = true;
+		}
+		else if (Input::is_key_pressed(Key::E))
+		{
+			position_ += up_direction_ * speed * delta_time;
+			moved = true;
+		}
+
+		if (delta.x != 0.0f || delta.y != 0.0f)
+		{
+			moved = true;
+			glm::quat yaw = glm::angleAxis(glm::radians(delta.x), up_direction_);
+			glm::quat pitch = glm::angleAxis(glm::radians(delta.y), right_direction);
+
+			forward_direction_ = glm::normalize(yaw * forward_direction_ * pitch);
+
+			moved = true;
+		}
+
+		if (moved)
+		{
+			update_view_matrix();
+		}
+	}
+
+	void Camera::orbit_update(float delta_time)
+	{
+		
 	}
 
 	void Camera::update_projection_matrix()

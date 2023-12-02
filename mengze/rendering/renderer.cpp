@@ -42,6 +42,7 @@ namespace mengze
 
 	void Renderer::set_pixel(uint32_t x, uint32_t y, const glm::vec3& color)
 	{
-		film_data_[y * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
+		//film_data_[y * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
+		film_data_[(film_->get_height() - 1 - y) * film_->get_width() + x] = to_rgba(glm::clamp(color, 0.0f, 1.0f));
 	}
 }

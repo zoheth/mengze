@@ -69,13 +69,12 @@ namespace mengze
 						w2 /= area;
 
 						float depth = w0 * v0.z + w1 * v1.z + w2 * v2.z;
-						//depth = 2.0f - depth;
+
 						if (depth < depth_buffer_[y * get_width() + x])
 						{
 							set_pixel(x, y, color);
 							depth_buffer_[y * get_width() + x] = depth;
 						}
-
 					}
 				}
 			}

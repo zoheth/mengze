@@ -6,6 +6,11 @@
 
 namespace mengze
 {
+	enum class CameraMode
+	{
+		ROAMING,
+		ORBIT
+	};
 	class Camera
 	{
 	public:
@@ -22,6 +27,8 @@ namespace mengze
 		float get_far() const { return far_; }
 
 	private:
+		void roaming_update(float delta_time);
+		void orbit_update(float delta_time);
 		void update_projection_matrix();
 		void update_view_matrix();
 	private:
@@ -34,7 +41,9 @@ namespace mengze
 		float near_{ 0.1f };
 		float far_{ 1000.0f };
 
-		glm::vec3 position_{ 0.0f , 0.0f, -0.3f};
+		CameraMode mode_{ CameraMode::ROAMING };
+
+		glm::vec3 position_{ 0.0f , 0.1f, 3.0f };
 		glm::vec3 up_direction_{ 0.0f, 1.0f, 0.0f };
 		glm::vec3 forward_direction_{ 0.0f , 0.0f,-1.0f };
 
