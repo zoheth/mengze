@@ -2,11 +2,13 @@
 #include "rendering/camera.h"
 #include "rasterizer.h"
 
-#include "edge_table.h"
+#include "core/timer.h"
+#include "polygon.h"
 #include "geometry.h"
 
 namespace mengze
 {
+	inline Timer timer;
 	class ScanlineZbufferRasterizer : public Rasterizer
 	{
 	public:
@@ -14,9 +16,12 @@ namespace mengze
 		{
 		}
 
+		float get_find_intersections_time() const { return find_intersections_time_; }
+		float get_construct_time() const { return construct_time_; }
+
 		void render_triangle() override
 		{
-
+			timer.reset();
 			PolygonStorage polygon_storage(get_height());
 
 			for (uint32_t i = 0; i < num_triangles_; ++i)
@@ -26,8 +31,12 @@ namespace mengze
 					continue;
 				polygon_storage.add_triangle(triangle, i);
 			}
+			construct_time_ = timer.elapsed();
+
 
 			ActivePolygon active_polygon;
+
+			float  find_intersections_time = 0.0f;
 
 			for (uint32_t y = 0; y < get_height(); ++y)
 			{
@@ -35,8 +44,13 @@ namespace mengze
 				for (auto& polygon : active_polygon.polygons)
 				{
 					IntersectionResult info{};
-					if(!polygon.find_intersections(y,info))
+
+					timer.reset();
+					bool result = polygon.find_intersections(y, info);
+					find_intersections_time += timer.elapsed();
+					if(!result)
 						continue;
+					
 
 					float depth = info.left_z;
 					for (uint32_t x = info.left_x; x < info.right_x; ++x)
@@ -52,8 +66,12 @@ namespace mengze
 					}
 				}
 			}
+			find_intersections_time_ = find_intersections_time;
 
 		}
+	private:
+		float find_intersections_time_;
+		float construct_time_;
 
 	};
 }

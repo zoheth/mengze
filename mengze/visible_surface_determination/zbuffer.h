@@ -1,11 +1,10 @@
 #pragma once
+//#include <ctpl_stl.h>
+#include <glm/glm.hpp>
+
 #include "rendering/camera.h"
 #include "rasterizer.h"
 
-#include <glm/glm.hpp>
-#include "glm/ext/matrix_clip_space.hpp"
-
-#include "edge_table.h"
 #include "geometry.h"
 #include "core/application.h"
 
@@ -17,12 +16,36 @@ namespace mengze
 	}
 
 
-	class NaiveZbufferRasterizer : public Rasterizer
+	class ZbufferRasterizer : public Rasterizer
 	{
 	public:
-		explicit NaiveZbufferRasterizer(Camera& camera, Geometry& geometry) : Rasterizer(camera,geometry)
+		explicit ZbufferRasterizer(Camera& camera, Geometry& geometry) : Rasterizer(camera, geometry)
 		{
 		}
+
+		/*void render_triangle() override
+		{
+			ctpl::thread_pool pool(std::thread::hardware_concurrency());
+
+			std::vector<std::future<void>> futures;
+
+			for (uint32_t i = 0; i < num_triangles_; ++i)
+			{
+				futures.push_back(pool.push([this, i](int) {
+					const auto& triangle = get_screen_triangle(i);
+					if (!check_screen_triangle(triangle))
+						return; 
+
+					const auto& world_triangle = get_world_triangle(i);
+					rasterize_triangle(triangle, world_triangle);
+					}));
+			}
+
+			for (auto& f : futures) {
+				f.get();
+			}
+
+		}*/
 
 		void render_triangle() override
 		{
@@ -30,7 +53,7 @@ namespace mengze
 			for (uint32_t i = 0; i < num_triangles_; ++i)
 			{
 				const auto& triangle = get_screen_triangle(i);
-				if(!check_screen_triangle(triangle))
+				if (!check_screen_triangle(triangle))
 					continue;
 				const auto& world_triangle = get_world_triangle(i);
 

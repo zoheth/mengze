@@ -1,17 +1,16 @@
 #pragma once
-#include "rendering/camera.h"
-#include "rendering/renderer.h"
-
 #include <glm/glm.hpp>
 #include "glm/ext/matrix_clip_space.hpp"
 
-#include "edge_table.h"
+#include "rendering/camera.h"
+#include "rendering/renderer.h"
+#include "polygon.h"
 #include "geometry.h"
 #include "core/application.h"
 
-
 namespace mengze
 {
+
 	glm::vec3 simple_shading(const glm::vec3& normal);
 
 	class Rasterizer : public Renderer
@@ -25,16 +24,7 @@ namespace mengze
 		void on_resize(uint32_t width, uint32_t height) override;
 
 
-		void render() override
-		{
-			clear(glm::vec3(0.1f));
-			for (uint32_t i = 0; i < screen_vertices_.size(); ++i)
-			{
-				screen_vertices_[i] = to_screen_space(geometry_.get_vertices()[i]);
-			}
-			render_triangle();
-
-		}
+		void render() override;
 
 		virtual  void render_triangle() = 0;
 
@@ -43,6 +33,10 @@ namespace mengze
 		Triangle get_world_triangle(uint32_t index) const;
 
 		bool check_screen_triangle(const Triangle& triangle) const;
+
+		uint32_t get_triangle_count() const { return num_triangles_; }
+		float get_vertex_transform_time() const { return vertex_transform_time_; }
+		float get_rasterization_time() const { return rasterization_time_; }
 
 	protected:
 		uint32_t num_triangles_;
@@ -55,5 +49,7 @@ namespace mengze
 		glm::vec3 to_screen_space(const glm::vec3& vertex) const;
 
 	private:
+		float vertex_transform_time_{};
+		float rasterization_time_{};
 	};
 }

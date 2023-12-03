@@ -6,6 +6,8 @@ namespace mengze
 {
 	void RenderLayer::on_ui_render()
 	{
+		if (!renderer_)
+			return;
 		ImGui::Begin("Viewport");
 		viewport_width_ = static_cast<uint32_t>(ImGui::GetContentRegionAvail().x);
 		viewport_height_ = static_cast<uint32_t>(ImGui::GetContentRegionAvail().y);

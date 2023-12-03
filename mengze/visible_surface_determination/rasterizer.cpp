@@ -1,7 +1,11 @@
 #include "rasterizer.h"
 
+#include "core/timer.h"
+
 namespace 
 {
+	mengze::Timer timer;
+
 	bool is_valid_number(float value) {
 		return !(std::isnan(value) || std::isinf(value));
 	}
@@ -49,6 +53,7 @@ namespace mengze
 
 	void Rasterizer::on_update(float ts)
 	{
+
 		camera_.on_update(ts);
 		if (depth_buffer_ && get_width() * get_height() > 0)
 			std::fill_n(depth_buffer_, get_width() * get_height(), std::numeric_limits<float>::max());
@@ -63,6 +68,21 @@ namespace mengze
 		delete[] depth_buffer_;
 		depth_buffer_ = new float[width * height];
 		std::fill_n(depth_buffer_, width * height, std::numeric_limits<float>::max());
+	}
+
+	void Rasterizer::render()
+	{
+		timer.reset();
+		clear(glm::vec3(0.1f));
+		for (uint32_t i = 0; i < screen_vertices_.size(); ++i)
+		{
+			screen_vertices_[i] = to_screen_space(geometry_.get_vertices()[i]);
+		}
+		vertex_transform_time_ = timer.elapsed();
+		timer.reset();
+		render_triangle();
+		rasterization_time_ = timer.elapsed();
+
 	}
 
 	Triangle Rasterizer::get_screen_triangle(uint32_t index) const

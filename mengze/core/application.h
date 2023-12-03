@@ -45,11 +45,13 @@ namespace mengze {
 		 * are the arguments required by the constructor of LayerType.
 		 */
 		template<typename T, typename... Args>
-		void push_layer(Args&&... args)
+		Layer* push_layer(Args&&... args)
 		{
 			static_assert(std::is_base_of_v<Layer, T>, "Pushed type is not subclass of Layer!");
 			layers_.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
 			layers_.back()->on_attach();
+
+			return layers_.back().get();
 		}
 
 		GLFWwindow* get_window_handle() const { return window_; }

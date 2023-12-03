@@ -43,7 +43,7 @@ namespace mengze
 
 		CameraMode mode_{ CameraMode::ROAMING };
 
-		glm::vec3 position_{ 0.0f , 0.1f, 3.0f };
+		glm::vec3 position_{ 0.0f , 0.1f, 3.5f };
 		glm::vec3 up_direction_{ 0.0f, 1.0f, 0.0f };
 		glm::vec3 forward_direction_{ 0.0f , 0.0f,-1.0f };
 

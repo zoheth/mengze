@@ -9,17 +9,20 @@ namespace mengze
 	{
 	public:
 		RenderLayer() = delete;
-		explicit RenderLayer(std::unique_ptr<Renderer> renderer) : Layer("Render"), renderer_(std::move(renderer)) {}
+		explicit RenderLayer(Renderer* renderer) : Layer("Render"), renderer_(renderer) {}
+
+		void set_renderer(Renderer* renderer) { renderer_ = renderer; }
 
 		void on_update(float ts) override
 		{
-			renderer_->on_update(ts);
+			if (renderer_)
+				renderer_->on_update(ts);
 		}
 
 		void on_ui_render() override;
 
 	private:
-		std::unique_ptr<Renderer> renderer_;
+		Renderer* renderer_{nullptr};
 		uint32_t viewport_width_{ 0 };
 		uint32_t viewport_height_{ 0 };
 	};
