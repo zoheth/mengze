@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	auto app = mengze::create_application(argc, argv);
 
 	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
-	auto camera = mengze::Camera(45.0f, 0.1f, 4000.0f);
+	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f);
 	//auto geometry = mengze::Geometry("scenes\\bunny.obj");
 	auto geometry = mengze::Geometry("scenes\\sponza.obj");
 

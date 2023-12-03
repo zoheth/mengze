@@ -52,7 +52,7 @@ namespace mengze
 		bool moved = false;
 		const glm::vec3 right_direction = glm::normalize(glm::cross(forward_direction_, up_direction_));
 
-		float speed = 1.0f;
+		float speed = 100.0f;
 
 		if (Input::is_key_pressed(Key::W))
 		{
@@ -88,7 +88,7 @@ namespace mengze
 		if (delta.x != 0.0f || delta.y != 0.0f)
 		{
 			moved = true;
-			glm::quat yaw = glm::angleAxis(glm::radians(delta.x), up_direction_);
+			glm::quat yaw = glm::angleAxis(glm::radians(-delta.x), up_direction_);
 			glm::quat pitch = glm::angleAxis(glm::radians(delta.y), right_direction);
 
 			forward_direction_ = glm::normalize(yaw * forward_direction_ * pitch);
