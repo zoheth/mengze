@@ -55,8 +55,7 @@ namespace mengze
 	{
 
 		camera_.on_update(ts);
-		if (depth_buffer_ && get_width() * get_height() > 0)
-			std::fill_n(depth_buffer_, get_width() * get_height(), std::numeric_limits<float>::max());
+		reset_depth_buffer();
 
 	}
 
@@ -65,9 +64,7 @@ namespace mengze
 		camera_.on_resize(width, height);
 		mengze::Renderer::on_resize(width, height);
 
-		delete[] depth_buffer_;
-		depth_buffer_ = new float[width * height];
-		std::fill_n(depth_buffer_, width * height, std::numeric_limits<float>::max());
+		resize_depth_buffer(width, height);
 	}
 
 	void Rasterizer::render()
@@ -83,6 +80,19 @@ namespace mengze
 		render_triangle();
 		rasterization_time_ = timer.elapsed();
 
+	}
+
+	void Rasterizer::resize_depth_buffer(uint32_t width, uint32_t height)
+	{
+		delete[] depth_buffer_;
+		depth_buffer_ = new float[width * height];
+		reset_depth_buffer();
+	}
+
+	void Rasterizer::reset_depth_buffer()
+	{
+		if (depth_buffer_ && get_width() * get_height() > 0)
+			std::fill_n(depth_buffer_, get_width() * get_height(), std::numeric_limits<float>::max());
 	}
 
 	Triangle Rasterizer::get_screen_triangle(uint32_t index) const

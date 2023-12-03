@@ -26,7 +26,10 @@ namespace mengze
 
 		void render() override;
 
-		virtual  void render_triangle() = 0;
+		virtual void render_triangle() = 0;
+
+		virtual void resize_depth_buffer(uint32_t width, uint32_t height);
+		virtual void reset_depth_buffer();
 
 		Triangle get_screen_triangle(uint32_t index) const;
 
@@ -37,6 +40,10 @@ namespace mengze
 		uint32_t get_triangle_count() const { return num_triangles_; }
 		float get_vertex_transform_time() const { return vertex_transform_time_; }
 		float get_rasterization_time() const { return rasterization_time_; }
+
+		static float edge_func(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+			return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+		}
 
 	protected:
 		uint32_t num_triangles_;

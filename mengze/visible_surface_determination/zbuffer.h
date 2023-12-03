@@ -11,10 +11,6 @@
 
 namespace mengze
 {
-	inline float edge_func(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
-		return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-	}
-
 
 	class ZbufferRasterizer : public Rasterizer
 	{
@@ -73,7 +69,7 @@ namespace mengze
 			float min_y = std::min({ v0.y, v1.y, v2.y });
 			float max_y = std::max({ v0.y, v1.y, v2.y });
 
-			float area = edge_func(v0, v1, v2);
+			float area = Rasterizer::edge_func(v0, v1, v2);
 
 			glm::vec3 normal = glm::normalize(glm::cross(world_triangle.vertices[1] - world_triangle.vertices[0], world_triangle.vertices[2] - world_triangle.vertices[0]));
 			glm::vec3 color = simple_shading(normal);
