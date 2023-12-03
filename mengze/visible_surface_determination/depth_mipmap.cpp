@@ -1,11 +1,11 @@
-#include "hierarchical_struct.h"
+#include "depth_mipmap.h"
 
 #include <algorithm>
 #include <cmath>
 
 namespace mengze
 {
-	MultiLevelDepthBuffer::MultiLevelDepthBuffer(const uint32_t width, const uint32_t height) : width_(width), height_(height)
+	DepthMipmap::DepthMipmap(const uint32_t width, const uint32_t height) : width_(width), height_(height)
 	{
 		levels_ = std::floor(std::log2(std::min(width, height)));
 
@@ -15,7 +15,7 @@ namespace mengze
 			depth_buffers_.emplace_back(level_width * level_height, std::numeric_limits<float>::infinity());
 		}
 	}
-	//void MultiLevelDepthBuffer::update_higher_levels_depth(uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y) {
+	//void DepthMipmap::update_higher_levels_depth(uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y) {
 
 	//	for (uint32_t level = 1; level < levels_; ++level) {
 	//		uint32_t level_min_x = min_x >> level;
@@ -50,7 +50,7 @@ namespace mengze
 	//	}
 	//}
 
-	void MultiLevelDepthBuffer::update_depth(uint32_t x, uint32_t y, float depth)
+	void DepthMipmap::update_depth(uint32_t x, uint32_t y, float depth)
 	{
 		uint32_t index = y * width_ + x;
 		depth_buffers_[0][index] = std::min(depth_buffers_[0][index], depth);
@@ -86,7 +86,7 @@ namespace mengze
 		}
 	}
 
-	bool MultiLevelDepthBuffer::is_occluded(uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y,
+	bool DepthMipmap::is_occluded(uint32_t min_x, uint32_t max_x, uint32_t min_y, uint32_t max_y,
 		float depth) const
 	{
 		uint32_t level = 0;
@@ -103,7 +103,7 @@ namespace mengze
 		return depth_buffers_[level][get_index(min_x, min_y, level)] < depth;
 	}
 
-	void MultiLevelDepthBuffer::reset()
+	void DepthMipmap::reset()
 	{
 		for (uint32_t i = 0; i < levels_; ++i)
 		{
@@ -111,17 +111,17 @@ namespace mengze
 		}
 	}
 
-	float MultiLevelDepthBuffer::get_depth(uint32_t x, uint32_t y) const
+	float DepthMipmap::get_depth(uint32_t x, uint32_t y) const
 	{
 		return depth_buffers_[0][y * width_ + x];
 	}
 
-	void MultiLevelDepthBuffer::set_depth(uint32_t x, uint32_t y, float depth)
+	void DepthMipmap::set_depth(uint32_t x, uint32_t y, float depth)
 	{
 		depth_buffers_[0][y * width_ + x] = depth;
 	}
 
-	uint32_t MultiLevelDepthBuffer::get_index(uint32_t x, uint32_t y, uint32_t level) const
+	uint32_t DepthMipmap::get_index(uint32_t x, uint32_t y, uint32_t level) const
 	{
 		uint32_t level_width = width_ >> level;
 		uint32_t level_x = x >> level;

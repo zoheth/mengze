@@ -4,7 +4,7 @@
 #include "rendering/camera.h"
 #include "rasterizer.h"
 #include "geometry.h"
-#include "hierarchical_struct.h"
+#include "depth_mipmap.h"
 
 
 namespace mengze
@@ -18,13 +18,13 @@ namespace mengze
 
 		void resize_depth_buffer(uint32_t width, uint32_t height) override
 		{
-			ml_depth_buffer_ = std::make_unique<MultiLevelDepthBuffer>(width, height);
+			depth_mipmap_ = std::make_unique<DepthMipmap>(width, height);
 		}
 
 		void reset_depth_buffer() override
 		{
-			if(ml_depth_buffer_)
-				ml_depth_buffer_->reset();
+			if(depth_mipmap_)
+				depth_mipmap_->reset();
 		}
 
 		void render_triangle() override
@@ -55,7 +55,7 @@ namespace mengze
 
 			float min_depth = std::min({ v0.z,v1.z,v2.z });
 
-			if (ml_depth_buffer_->is_occluded(min_x,max_x,min_y,max_y,min_depth))
+			if (depth_mipmap_->is_occluded(min_x,max_x,min_y,max_y,min_depth))
 				return;
 
 			float area = Rasterizer::edge_func(v0, v1, v2);
@@ -78,20 +78,20 @@ namespace mengze
 
 						float depth = w0 * v0.z + w1 * v1.z + w2 * v2.z;
 
-						if (depth < ml_depth_buffer_->get_depth(x, y))
+						if (depth < depth_mipmap_->get_depth(x, y))
 						{
 							set_pixel(x, y, color);
-							//ml_depth_buffer_->set_depth(x, y, depth);
-							ml_depth_buffer_->update_depth(x, y, depth);
+							//depth_mipmap_->set_depth(x, y, depth);
+							depth_mipmap_->update_depth(x, y, depth);
 						}
 					}
 				}
 			}
-			// ml_depth_buffer_->update_higher_levels_depth(std::floor(min_x), std::ceil(max_x), std::floor(min_y), std::ceil(max_y));
+			// depth_mipmap_->update_higher_levels_depth(std::floor(min_x), std::ceil(max_x), std::floor(min_y), std::ceil(max_y));
 		}
 
 	private:
-		std::unique_ptr<MultiLevelDepthBuffer> ml_depth_buffer_{ nullptr };
+		std::unique_ptr<DepthMipmap> depth_mipmap_{ nullptr };
 
 	};
 }

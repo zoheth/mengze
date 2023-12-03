@@ -5,9 +5,9 @@
 
 namespace mengze
 {
-	class MultiLevelDepthBuffer {
+	class DepthMipmap {
 	public:
-		MultiLevelDepthBuffer(const uint32_t width, const uint32_t height);
+		DepthMipmap(const uint32_t width, const uint32_t height);
 
 		void update_depth(uint32_t x, uint32_t y, float depth);
 
