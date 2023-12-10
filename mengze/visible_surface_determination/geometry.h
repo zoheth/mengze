@@ -46,7 +46,6 @@ namespace mengze
 
 		Triangle get_triangle(uint32_t index, const std::vector<glm::vec3>* p_vertices = nullptr) const;
 
-
 	private:
 		void parse_obj(const std::string& path);
 

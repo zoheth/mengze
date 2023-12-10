@@ -38,13 +38,18 @@ int main(int argc, char** argv)
 	auto app = mengze::create_application(argc, argv);
 
 	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
-	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f);
-	//auto geometry = mengze::Geometry("scenes\\bunny.obj");
+#ifdef NDEBUG
+	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f, 100.0f);
 	auto geometry = mengze::Geometry("scenes\\sponza.obj");
+#else
+	auto camera = mengze::Camera(45.0f, 0.1f, 100.0f);
+	auto geometry = mengze::Geometry("scenes\\bunny.obj");
+#endif
 
 	const auto zbuffer_rasterizer = std::make_unique<mengze::ZbufferRasterizer>(camera, geometry);
 	const auto scanline_zbuffer_rasterizer = std::make_unique<mengze::ScanlineZbufferRasterizer>(camera, geometry);
 	const auto hierarchical_zbuffer_rasterizer = std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry);
+	const auto hierarchical_zbuffer_octree_rasterizer = std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry, true);
 
 
 	auto* render_layer = dynamic_cast<mengze::RenderLayer*>(app->push_layer<mengze::RenderLayer>(zbuffer_rasterizer.get()));
@@ -54,6 +59,7 @@ int main(int argc, char** argv)
 	settings_layer->push_rasterizer("Z buffer", zbuffer_rasterizer.get());
 	settings_layer->push_rasterizer("Scanline z buffer", scanline_zbuffer_rasterizer.get());
 	settings_layer->push_rasterizer("Hierarchical z buffer", hierarchical_zbuffer_rasterizer.get());
+	settings_layer->push_rasterizer("Hierarchical z buffer with octree", hierarchical_zbuffer_octree_rasterizer.get());
 
 	app->run();
 }

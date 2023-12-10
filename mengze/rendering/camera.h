@@ -14,7 +14,7 @@ namespace mengze
 	class Camera
 	{
 	public:
-		Camera(float fov, float near, float far);
+		Camera(float fov, float near, float far, float speed = 1.0f);
 
 		void on_update(float delta_time);
 		void on_resize(uint32_t width, uint32_t height);
@@ -40,6 +40,7 @@ namespace mengze
 		float fov_{ 45.0f };
 		float near_{ 0.1f };
 		float far_{ 1000.0f };
+		float speed_{ 1.0f };
 
 		CameraMode mode_{ CameraMode::ROAMING };
 

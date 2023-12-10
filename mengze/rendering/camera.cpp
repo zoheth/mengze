@@ -9,8 +9,8 @@
 
 namespace mengze
 {
-	Camera::Camera(float fov, float near, float far)
-		: fov_(fov), near_(near), far_(far)
+	Camera::Camera(float fov, float near, float far, float speed)
+		: fov_(fov), near_(near), far_(far), speed_(speed)
 	{
 		update_view_matrix();
 	}
@@ -52,36 +52,34 @@ namespace mengze
 		bool moved = false;
 		const glm::vec3 right_direction = glm::normalize(glm::cross(forward_direction_, up_direction_));
 
-		float speed = 100.0f;
-
 		if (Input::is_key_pressed(Key::W))
 		{
-			position_ += forward_direction_ * speed * delta_time;
+			position_ += forward_direction_ * speed_ * delta_time;
 			moved = true;
 		}
 		else if (Input::is_key_pressed(Key::S))
 		{
-			position_ -= forward_direction_ * speed * delta_time;
+			position_ -= forward_direction_ * speed_ * delta_time;
 			moved = true;
 		}
 		if (Input::is_key_pressed(Key::A))
 		{
-			position_ -= right_direction * speed * delta_time;
+			position_ -= right_direction * speed_ * delta_time;
 			moved = true;
 		}
 		else if (Input::is_key_pressed(Key::D))
 		{
-			position_ += right_direction * speed * delta_time;
+			position_ += right_direction * speed_ * delta_time;
 			moved = true;
 		}
 		if (Input::is_key_pressed(Key::Q))
 		{
-			position_ -= up_direction_ * speed * delta_time;
+			position_ -= up_direction_ * speed_ * delta_time;
 			moved = true;
 		}
 		else if (Input::is_key_pressed(Key::E))
 		{
-			position_ += up_direction_ * speed * delta_time;
+			position_ += up_direction_ * speed_ * delta_time;
 			moved = true;
 		}
 

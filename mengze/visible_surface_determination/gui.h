@@ -5,6 +5,7 @@
 
 #include "rasterizer.h"
 #include "scanline_zbuffer.h"
+#include "hierarchical_zbuffer.h"
 
 namespace mengze
 {
@@ -61,6 +62,16 @@ namespace mengze
 				ImGui::Text("Find intersections time: %.3f ms", scanline_rasterizer->get_find_intersections_time());
 				ImGui::Text("Construct time: %.3f ms", scanline_rasterizer->get_construct_time());
 			}
+
+			if(const auto hierarchical_rasterizer = dynamic_cast<HierarchicalZbufferRasterizer*>(rasterizer))
+			{
+				if(hierarchical_rasterizer->use_octree())
+				{
+					ImGui::Text("Octree construct time: %.3f ms", hierarchical_rasterizer->get_octree_construct_time());
+					ImGui::Text("Octree to screen space time: %.3f ms", hierarchical_rasterizer->get_octree_to_screen_space_time());
+				}
+			}
+
 			ImGui::End();
 		}
 

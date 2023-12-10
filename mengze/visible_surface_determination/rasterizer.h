@@ -46,14 +46,14 @@ namespace mengze
 		}
 
 	protected:
+		glm::vec3 to_screen_space(const glm::vec3& vertex) const;
+
 		uint32_t num_triangles_;
 		Camera& camera_;
 		Geometry& geometry_;
 		std::vector<glm::vec3> screen_vertices_;
 		float* depth_buffer_{ nullptr };
 
-	private:
-		glm::vec3 to_screen_space(const glm::vec3& vertex) const;
 
 	private:
 		float vertex_transform_time_{};
