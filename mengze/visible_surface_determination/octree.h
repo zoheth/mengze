@@ -33,7 +33,7 @@ namespace mengze
         BoundingBox compute_triangle_bounding_box(uint32_t triangle_index, const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) const;
 
     private:
-        static constexpr uint32_t MAX_TRIANGLES_PER_NODE = 50;
+        static constexpr uint32_t MAX_TRIANGLES_PER_NODE = 5000;
         static constexpr uint32_t MAX_DEPTH = 3;
         uint32_t depth = 0;
     };

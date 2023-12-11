@@ -3,9 +3,17 @@
 namespace mengze
 {
 
-	Geometry::Geometry(const std::string& path)
+	Geometry::Geometry(const std::string& path, const glm::mat4* transform)
 	{
 		parse_obj(path);
+
+		if(transform)
+		{
+			for (auto& vertice : vertices_)
+			{
+				vertice = glm::vec3(*transform * glm::vec4(vertice, 1.0f));
+			}
+		}
 	}
 
 	Triangle Geometry::get_triangle(uint32_t index, const std::vector<glm::vec3>* p_vertices) const

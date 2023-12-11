@@ -36,7 +36,7 @@ namespace mengze
 	class Geometry
 	{
 	public:
-		Geometry(const std::string& path);
+		Geometry(const std::string& path, const glm::mat4* transform = nullptr);
 
 		std::vector<glm::vec3>& get_vertices() { return vertices_; }
 

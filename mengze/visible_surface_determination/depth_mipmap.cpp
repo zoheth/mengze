@@ -53,7 +53,9 @@ namespace mengze
 	void DepthMipmap::update_depth(uint32_t x, uint32_t y, float depth)
 	{
 		uint32_t index = y * width_ + x;
-		depth_buffers_[0][index] = std::min(depth_buffers_[0][index], depth);
+		//depth_buffers_[0][index] = std::min(depth_buffers_[0][index], depth);
+		depth_buffers_[0][index] = depth;
+
 
 		for (uint32_t level = 1; level < levels_; ++level) {
 			x >>= 1;
@@ -68,21 +70,21 @@ namespace mengze
 
 			current_depth = depth;
 
-			float min_depth = depth;
+			float max_depth = depth;
 			for (int dy = 0; dy <= 1; ++dy) {
 				for (int dx = 0; dx <= 1; ++dx) {
 					uint32_t neighbour_x = (x << 1) + dx;
 					uint32_t neighbour_y = (y << 1) + dy;
 					if (neighbour_x < width_ && neighbour_y < height_) {
 						uint32_t neighbour_index = neighbour_y * (level_width << 1) + neighbour_x;
-						min_depth = std::min(min_depth, depth_buffers_[level - 1][neighbour_index]);
+						max_depth = std::max(max_depth, depth_buffers_[level - 1][neighbour_index]);
 					}
 				}
 			}
-			if (min_depth >= current_depth) {
+			if (max_depth >= current_depth) {
 				break;
 			}
-			depth = min_depth;
+			current_depth = max_depth;
 		}
 	}
 
@@ -91,9 +93,6 @@ namespace mengze
 	{
 		uint32_t level = 0;
 		while (level < levels_ - 1) {
-			uint32_t level_width = width_ >> level;
-			uint32_t level_height = height_ >> level;
-
 			if ((max_x >> level) == (min_x >> level) && (max_y >> level) == (min_y >> level)) {
 				break;
 			}

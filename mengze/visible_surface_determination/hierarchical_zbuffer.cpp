@@ -132,7 +132,7 @@ namespace mengze
 
 		float min_depth = std::min({ v0.z,v1.z,v2.z });
 
-		if (depth_mipmap_->is_occluded(min_x, max_x, min_y, max_y, min_depth))
+		if (depth_mipmap_->is_occluded(std::floor(min_x), std::ceil(max_x), std::floor(min_y), std::ceil(max_y), min_depth))
 			return;
 
 		float area = Rasterizer::edge_func(v0, v1, v2);
