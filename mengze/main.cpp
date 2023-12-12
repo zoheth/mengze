@@ -6,10 +6,10 @@
 #include "rendering/renderer.h"
 #include "rendering/render_layer.h"
 
-#include "visible_surface_determination/scanline_zbuffer.h"
-#include "visible_surface_determination/zbuffer.h"
-#include "visible_surface_determination/hierarchical_zbuffer.h"
-#include "visible_surface_determination/gui.h"
+#include "hidden_surface//scanline_zbuffer.h"
+#include "hidden_surface/zbuffer.h"
+#include "hidden_surface/hierarchical_zbuffer.h"
+#include "hidden_surface/gui.h"
 
 class SimpleRenderer : public mengze::Renderer
 {
@@ -42,10 +42,8 @@ int main(int argc, char** argv)
 
 	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
 #ifdef NDEBUG
-	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f, 1000.0f);
-	glm::mat4 rotation_matrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	rotation_matrix = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * rotation_matrix;
-	auto geometry = mengze::Geometry("scenes\\luyu.obj", &rotation_matrix);
+	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f, 100.0f);
+	auto geometry = mengze::Geometry("scenes\\sponza.obj");
 #else
 	auto camera = mengze::Camera(45.0f, 0.1f, 100.0f);
 	auto geometry = mengze::Geometry("scenes\\bunny.obj");
