@@ -1,15 +1,16 @@
-项目地址：[https://github.com/ZOHETH/mengze](https://github.com/ZOHETH/mengze)
 梦泽是一个专注于计算机图形学原理的实验性项目。它的核心目标是完成计算机图形（CG）的相关作业，同时具备良好的可扩展性，以便进行各种图形学实验。
-### 代码声明
-项目使用Vulkan作为后端，通过ImGui实现交互功能，基础应用框架（窗口、输入事件、日志）改自[WalnutAppTemplate](https://github.com/StudioCherno/WalnutAppTemplate)。来自WalnutAppTemplate的内容全部位于`mengze/core`，其他代码均独立完成。可以在[commits界面](https://github.com/ZOHETH/mengze/commits/master/)看到完整的实现记录。
+
+项目使用Vulkan作为后端，通过ImGui实现交互功能，基础应用框架（窗口、输入事件、日志）改自[WalnutAppTemplate](https://github.com/StudioCherno/WalnutAppTemplate)。来自WalnutAppTemplate的内容全部位于`mengze/core`。
+
 梦泽使用Vulkan作为图形处理API，但故意不使用Vulkan的标准图形管线。梦泽自定义渲染处理，将渲染结果写入自定义数组交由vulkan显示，而非依赖Vulkan的预设管线。
-### 开发环境
-Visual Studio Community 2022  17.7.5
-CMake 3.28.0-rc1 （最低要求3.16）
+
 ### 构建与运行
 在根目录依次运行以下命令。要求windows x64平台，vs2022，cmake3.16。
+
 `cmake -G "Visual Studio 17 2022" -A x64 -S . -Bbuild/`
+
 `cmake --build build --config Release --target mengze`
+
 `.\build\mengze\Release\mengze.exe`
 
 ---
