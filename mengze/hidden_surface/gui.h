@@ -17,10 +17,10 @@ namespace mengze
 
 		}
 
-		void push_rasterizer(const std::string& name, Rasterizer* rasterizer)
+		void push_rasterizer(const std::string& name, std::unique_ptr<Rasterizer> rasterizer)
 		{
 			rasterizer_names.push_back(name);
-			rasterizer_ptrs.push_back(rasterizer);
+			rasterizers.push_back(std::move(rasterizer));
 		}
 
 		void on_attach() override
@@ -31,7 +31,7 @@ namespace mengze
 
 		void on_ui_render() override
 		{
-			auto* rasterizer = rasterizer_ptrs[rasterizer_index_];
+		    auto *rasterizer = rasterizers[rasterizer_index_].get();
 
 			ImGui::Begin("Settings");
 
@@ -43,13 +43,13 @@ namespace mengze
 				}
 
 				if (ImGui::Combo("Choose Rasterizer", &rasterizer_index_, items.c_str())) {
-					render_layer_->set_renderer(rasterizer_ptrs[rasterizer_index_]);
+				    render_layer_->set_renderer(rasterizers[rasterizer_index_].get());
 				}
 			}
 			ImGui::End();
 
 			ImGui::Begin("Statistics");
-			if (rasterizer_ptrs[rasterizer_index_])
+		    if (rasterizers[rasterizer_index_])
 			{
 				ImGui::Text("Vertex transform time: %.3f ms", rasterizer->get_vertex_transform_time());
 				ImGui::Text("Rasterization time: %.3f ms", rasterizer->get_rasterization_time());
@@ -79,7 +79,7 @@ namespace mengze
 		RenderLayer* render_layer_{ nullptr };
 		int rasterizer_index_{ 0 };
 		std::vector<std::string> rasterizer_names;
-		std::vector<Rasterizer*> rasterizer_ptrs;
+		std::vector<std::unique_ptr<Rasterizer>> rasterizers;
 
 	};
 }

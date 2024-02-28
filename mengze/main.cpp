@@ -6,10 +6,6 @@
 #include "rendering/renderer.h"
 #include "rendering/render_layer.h"
 
-#include "hidden_surface//scanline_zbuffer.h"
-#include "hidden_surface/zbuffer.h"
-#include "hidden_surface/hierarchical_zbuffer.h"
-#include "hidden_surface/gui.h"
 
 class SimpleRenderer : public mengze::Renderer
 {
@@ -40,29 +36,10 @@ int main(int argc, char** argv)
 {
 	auto app = mengze::create_application(argc, argv);
 
-	//app->push_layer<mengze::RenderLayer>(std::make_unique<SimpleRenderer>());
-#ifdef NDEBUG
-	auto camera = mengze::Camera(45.0f, 0.1f, 5000.0f, 100.0f);
-	auto geometry = mengze::Geometry("scenes\\sponza.obj");
-#else
-	auto camera = mengze::Camera(45.0f, 0.1f, 100.0f);
-	auto geometry = mengze::Geometry("scenes\\bunny.obj");
-#endif
+	auto renderer = std::make_shared<SimpleRenderer>();
 
-	const auto zbuffer_rasterizer = std::make_unique<mengze::ZbufferRasterizer>(camera, geometry);
-	const auto scanline_zbuffer_rasterizer = std::make_unique<mengze::ScanlineZbufferRasterizer>(camera, geometry);
-	const auto hierarchical_zbuffer_rasterizer = std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry);
-	const auto hierarchical_zbuffer_octree_rasterizer = std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry, true);
-
-
-	auto* render_layer = dynamic_cast<mengze::RenderLayer*>(app->push_layer<mengze::RenderLayer>(zbuffer_rasterizer.get()));
-
-	auto* settings_layer = dynamic_cast<mengze::SettingsLayer*>(app->push_layer<mengze::SettingsLayer>(render_layer));
-
-	settings_layer->push_rasterizer("Z buffer", zbuffer_rasterizer.get());
-	settings_layer->push_rasterizer("Scanline z buffer", scanline_zbuffer_rasterizer.get());
-	settings_layer->push_rasterizer("Hierarchical z buffer", hierarchical_zbuffer_rasterizer.get());
-	settings_layer->push_rasterizer("Hierarchical z buffer with octree", hierarchical_zbuffer_octree_rasterizer.get());
+	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(
+	    app->push_layer<mengze::RenderLayer>(renderer.get()));
 
 	app->run();
 }
