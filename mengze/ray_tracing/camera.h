@@ -18,22 +18,6 @@ class Camera : public mengze::Camera
   public:
 	Camera(glm::vec3 position, glm::vec3 forward, float fov);
 
-	void render(const Hittable &scene)
-	{
-		for (uint32_t i = 0; i < viewport_width_; ++i)
-		{
-			for (uint32_t j = 0; j < viewport_height_; ++j)
-			{
-				glm::vec3 color{0.0f, 0.0f, 0.0f};
-				for (uint32_t sample = 0; sample < samples_per_pixel_; ++sample)
-				{
-					Ray ray = get_ray(i, j);
-					color += ray_color(ray, max_depth_, scene);
-				}
-				std::cout<< fmt::format("{},{},{}\n", color.r, color.g, color.b);
-			}
-		}
-	}
 
 	Ray get_ray(float i, float j) const
 	{
@@ -46,7 +30,6 @@ class Camera : public mengze::Camera
 		return Ray(ray_origin, ray_direction);
 	}
 
-  private:
 	void initialize()
 	{
 		auto theta = glm::radians(fov_);
@@ -55,7 +38,7 @@ class Camera : public mengze::Camera
 		auto projection_plane_height = 2 * h * focus_distance_;
 		auto projection_plane_width  = projection_plane_height * (static_cast<float>(viewport_width_) / viewport_height_);
 
-		w_ = glm::normalize(forward_direction_);
+		w_ = glm::normalize(-forward_direction_);
 		v_ = glm::normalize(up_direction_);
 		u_ = glm::normalize(glm::cross(v_, w_));
 
@@ -73,31 +56,14 @@ class Camera : public mengze::Camera
 		defocus_disk_v_     = v_ * defocus_redius;
 	}
 
+  private:
+
 	glm::vec3 pixel_sample_square() const
 	{
 		float px = -0.5f + random_float(0.0f, 1.0f);
 		float py = -0.5f + random_float(0.0f, 1.0f);
 
 		return (px * pixel_delta_u_) + (py * pixel_delta_v_);
-	}
-
-	glm::vec3 ray_color(const Ray &r, int depth, const Hittable &scene) const
-	{
-		if (depth <= 0)
-			return glm::vec3{0, 0, 0};
-
-		HitRecord rec;
-
-		if (scene.hit(r, Interval(0.001), rec))
-		{
-			Ray       scattered;
-			glm::vec3 attenuation;
-
-			if (rec.material->scatter(r, rec, attenuation, scattered))
-				return attenuation * ray_color(scattered, depth - 1, scene);
-
-			return {0.f, 0.f, 0.f};
-		}
 	}
 
   private:

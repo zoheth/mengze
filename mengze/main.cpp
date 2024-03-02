@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "core/application.h"
+#include "ray_tracing/app.h"
 #include "ray_tracing/camera.h"
 #include "ray_tracing/material.h"
 #include "ray_tracing/scene.h"
@@ -86,17 +87,18 @@ int main(int argc, char **argv)
 	auto material3 = std::make_shared<mengze::Metal>(glm::vec3(0.7f, 0.6f, 0.5f), 0.0f);
 	scene.add(std::make_shared<mengze::Sphere>(glm::vec3(4.0f, 1.0f, 0.0f), 1.0f, material3));
 
-	auto camera = mengze::rt::Camera({13.f, 2.f, 3.f}, {-13.f, -2.f, -3.f}, 20.0f);
+	//auto camera = mengze::rt::Camera({13.f, 2.f, 3.f}, {-13.f, -2.f, -3.f}, 20.0f);
 
 	/*std::thread render_thread([scene, &camera]() {
 		camera.render(scene);
 	});*/
 
-	camera.render(scene);
+	//camera.render(scene);
 
 	auto app = mengze::create_application(argc, argv);
 
-	auto renderer = std::make_shared<SimpleRenderer>();
+	auto renderer = std::make_shared<Renderer>();
+	renderer->set_scene(&scene);
 
 	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(
 	    app->push_layer<mengze::RenderLayer>(renderer.get()));
