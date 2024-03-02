@@ -10,7 +10,7 @@
 namespace mengze
 {
 
-	class Scene
+	/*class Scene
 	{
 	public:
 		Scene() = default;
@@ -29,5 +29,5 @@ namespace mengze
 		Node* root_{ nullptr };
 
 		std::unordered_map<std::type_index, std::vector<std::unique_ptr<Component>>> components_;
-	};
+	};*/
 }

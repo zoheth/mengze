@@ -15,11 +15,16 @@ class Ray
 	{
 	}
 
-	const glm::vec3 &get_origin() const
+	glm::vec3 at(float t) const
+	{
+		return origin_ + t * direction_;
+	}
+
+	const glm::vec3 &origin() const
 	{
 		return origin_;
 	}
-	const glm::vec3 &get_direction() const
+	const glm::vec3 &direction() const
 	{
 		return direction_;
 	}

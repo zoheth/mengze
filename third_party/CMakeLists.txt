@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(third_party LANGUAGES C CXX)
 
+
 # tinygltf
 add_library(tinygltf INTERFACE)
 set(TINYGLTF_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tinygltf)

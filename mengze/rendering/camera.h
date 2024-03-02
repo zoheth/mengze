@@ -16,6 +16,8 @@ namespace mengze
 	public:
 		Camera(float fov, float near, float far, float speed = 1.0f);
 
+		Camera(glm::vec3 position, glm::vec3 forward, float fov);
+
 		void on_update(float delta_time);
 		void on_resize(uint32_t width, uint32_t height);
 
@@ -31,7 +33,7 @@ namespace mengze
 		void orbit_update(float delta_time);
 		void update_projection_matrix();
 		void update_view_matrix();
-	private:
+	protected:
 		glm::mat4 projection_matrix_{ 1.0f };
 		glm::mat4 view_matrix_{ 1.0f };
 		glm::mat4 inverse_projection_matrix_{ 1.0f };
