@@ -1,6 +1,10 @@
 #pragma once
 
+#include <memory>
+
 #include "ray.h"
+#include "texture.h"
+
 
 namespace mengze
 {
@@ -13,19 +17,28 @@ class Material
 	virtual ~Material() = default;
 
 	virtual bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const = 0;
+
+	virtual glm::vec3 emitted(float u, float v, const glm::vec3 &p) const
+	{
+		return glm::vec3(0.0f);
+	}
 };
 
 class Lambertian : public Material
 {
   public:
-	Lambertian(const glm::vec3 &albedo) :
+	Lambertian(const std::shared_ptr<Texture> &albedo) :
 	    albedo_(albedo)
+	{}
+
+	Lambertian(const glm::vec3 &albedo) :
+	    albedo_(std::make_shared<SolidColor>(albedo))
 	{}
 
 	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override;
 
   private:
-	glm::vec3 albedo_;
+	std::shared_ptr<Texture> albedo_;
 };
 
 class Metal : public Material
@@ -62,6 +75,26 @@ class Dielectric : public Material
 		r0      = r0 * r0;
 		return r0 + (1 - r0) * pow((1 - cosine), 5);
 	}
+};
+
+class DiffuseLight : public Material
+{
+public:
+	explicit DiffuseLight(const std::shared_ptr<Texture> &emit) : emit_(emit) {}
+	explicit DiffuseLight(const glm::vec3 &color) : emit_(std::make_shared<SolidColor>(color)) {}
+
+	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override
+	{
+		return false;
+	}
+
+	glm::vec3 emitted(float u, float v, const glm::vec3 &p) const override
+	{
+		return emit_->value(u, v, p);
+	}
+
+private:
+	std::shared_ptr<Texture> emit_;
 };
 
 }        // namespace mengze
