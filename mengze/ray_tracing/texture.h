@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 
-namespace mengze
+namespace mengze::rt
 {
 class Texture
 {

@@ -1,6 +1,6 @@
 #include "scene.h"
 
-namespace mengze
+namespace mengze::rt
 {
 void Scene::add(std::shared_ptr<Hittable> object)
 {

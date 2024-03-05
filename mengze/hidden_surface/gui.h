@@ -17,7 +17,7 @@ namespace mengze
 
 		}
 
-		void push_rasterizer(const std::string& name, std::unique_ptr<Rasterizer> rasterizer)
+		void push_rasterizer(const std::string& name, std::shared_ptr<Rasterizer> rasterizer)
 		{
 			rasterizer_names.push_back(name);
 			rasterizers.push_back(std::move(rasterizer));
@@ -43,7 +43,7 @@ namespace mengze
 				}
 
 				if (ImGui::Combo("Choose Rasterizer", &rasterizer_index_, items.c_str())) {
-				    render_layer_->set_renderer(rasterizers[rasterizer_index_].get());
+				    render_layer_->set_renderer(rasterizers[rasterizer_index_]);
 				}
 			}
 			ImGui::End();
@@ -79,7 +79,7 @@ namespace mengze
 		RenderLayer* render_layer_{ nullptr };
 		int rasterizer_index_{ 0 };
 		std::vector<std::string> rasterizer_names;
-		std::vector<std::unique_ptr<Rasterizer>> rasterizers;
+		std::vector<std::shared_ptr<Rasterizer>> rasterizers;
 
 	};
 }

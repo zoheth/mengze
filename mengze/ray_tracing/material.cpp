@@ -3,7 +3,7 @@
 #include "util/math.h"
 #include "hittable.h"
 
-namespace mengze
+namespace mengze::rt
 {
 bool Lambertian::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const
 {
@@ -15,7 +15,7 @@ bool Lambertian::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &att
 	}
 
 	scattered   = Ray(rec.position, scatter_direction);
-	attenuation = albedo_;
+	attenuation = albedo_->value(rec.u, rec.v, rec.position);
 
 	return true;
 }

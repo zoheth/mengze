@@ -5,7 +5,7 @@
 #include "hittable.h"
 #include "material.h"
 
-namespace mengze
+namespace mengze::rt
 {
 
 class Sphere : public Hittable

@@ -1,79 +1,64 @@
-#include "app.h"
+#include "ray_tracing/app.h"
 
-#include "bvh.h"
-#include "triangle.h"
+#include "rendering/render_layer.h"
+#include "ray_tracing/bvh.h"
+#include "ray_tracing/triangle.h"
+#include "ray_tracing/sphere.h"
+#include "ray_tracing/scene.h"
+#include "ray_tracing/camera.h"
+#include "ray_tracing/renderer.h"
 
-Renderer::Renderer() :
-    mengze::Renderer(),
-    camera_({13.f, 2.f, 3.f}, {-13.f, -2.f, -3.f}, 20.0f)
+namespace mengze::rt
 {
+
+void ray_tracing_app_setup(mengze::Application &app)
+{
+	auto scene = std::make_shared<Scene>();
+
+	auto red   = std::make_shared<Lambertian>(glm::vec3{.65, .05, .05});
+	auto white = std::make_shared<Lambertian>(glm::vec3{.73, .73, .73});
+	auto green = std::make_shared<Lambertian>(glm::vec3{.12, .45, .15});
+	auto light = std::make_shared<DiffuseLight>(glm::vec3{15, 15, 15});
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 555, 0), glm::vec3(555, 0, 555), green));
+	scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(555, 0, 555), green));
+
+	/*scene->add(std::make_shared<Quad>(glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), green));*/
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), red));
+	scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(0, 555, 555), glm::vec3(0, 0, 555), red));
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(555, 0, 0), glm::vec3(0, 0, 555), white));
+	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 0, 555), glm::vec3(0, 0, 555), white));
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 555), glm::vec3(0, 555, 555), white));
+	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 555), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(555, 555, 0), glm::vec3(0, 555, 555), white));
+	scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
+
+	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
+	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
+
+	/*scene->add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), light));*/
+
+	auto camera = std::make_shared<Camera>(glm::vec3{278.f, 278.f, -800.f}, glm::vec3{0.f, 0.f, 800.f}, 40.0f);
+
+	auto renderer = std::make_shared<Renderer>(camera, 100, 10);
+	renderer->set_scene(scene);
+
+	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(
+	    app.push_layer<mengze::RenderLayer>(renderer));
+
 }
 
-void Renderer::set_scene(mengze::Scene *scene)
-{
-	scene_ = scene;
-}
-
-void Renderer::on_resize(uint32_t width, uint32_t height)
-{
-	camera_.on_resize(width, height);
-	mengze::Renderer::on_resize(width, height);
-}
-
-void Renderer::render()
-{
-	camera_.initialize();
-	for (uint32_t y = cur_y_; y < get_height(); ++y)
-	{
-		for (uint32_t x = 0; x < get_width(); ++x)
-		{
-			glm::vec3 color{0.0f, 0.0f, 0.0f};
-			for (uint32_t sample = 0; sample < 10; ++sample)
-			{
-				mengze::Ray ray = camera_.get_ray(x, y);
-				color += ray_color(ray, 10);
-			}
-			color /= 10.0f;
-
-			set_pixel(x, y, color);
-		}
-		if (y - cur_y_ > 20)
-		{
-			cur_y_ = y;
-			break;
-		}
-	}
-}
-
-glm::vec3 Renderer::ray_color(const mengze::Ray &r, int depth) const
-{
-	if (depth <= 0)
-		return glm::vec3{0, 0, 0};
-
-	mengze::HitRecord rec;
-
-	if (scene_->hit(r, mengze::Interval(0.001), rec))
-	{
-	    mengze::Ray scattered;
-	    glm::vec3   attenuation;
-
-	    if (rec.material->scatter(r, rec, attenuation, scattered))
-	        return attenuation * ray_color(scattered, depth - 1);
-
-	    return {0.f, 0.f, 0.f};
-	}
-
-	glm::vec3 unit_direction = glm::normalize(r.direction());
-	float     a              = 0.5f * (unit_direction.y + 1.0f);
-	return (1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0);
-}
 
 void random_spheres()
 {
-	mengze::Scene scene;
-	auto          ground_material = std::make_shared<mengze::Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f));
+	Scene scene;
+	auto              ground_material = std::make_shared<Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f));
 
-	scene.add(std::make_shared<mengze::Sphere>(glm::vec3(0.0f, -1000.0f, 0.0f), 1000.0f, ground_material));
+	scene.add(std::make_shared<Sphere>(glm::vec3(0.0f, -1000.0f, 0.0f), 1000.0f, ground_material));
 
 	for (int a = -11; a < 11; ++a)
 	{
@@ -84,39 +69,42 @@ void random_spheres()
 
 			if (glm::length(center - glm::vec3(4.0f, 0.2f, 0.0f)) > 0.9f)
 			{
-				std::shared_ptr<mengze::Material> sphere_material;
+				std::shared_ptr<Material> sphere_material;
 
 				if (choose_mat < 0.8f)
 				{
 					// diffuse
 					glm::vec3 albedo = mengze::random_vec3() * mengze::random_vec3();
-					sphere_material  = std::make_shared<mengze::Lambertian>(albedo);
-					scene.add(std::make_shared<mengze::Sphere>(center, 0.2f, sphere_material));
+					sphere_material  = std::make_shared<Lambertian>(albedo);
+					scene.add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
 				}
 				else if (choose_mat < 0.95f)
 				{
 					// metal
 					glm::vec3 albedo = mengze::random_vec3(0.5f, 1.0f);
 					float     fuzz   = mengze::random_float(0.0f, 0.5f);
-					sphere_material  = std::make_shared<mengze::Metal>(albedo, fuzz);
-					scene.add(std::make_shared<mengze::Sphere>(center, 0.2f, sphere_material));
+					sphere_material  = std::make_shared<Metal>(albedo, fuzz);
+					scene.add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
 				}
 				else
 				{
 					// glass
-					sphere_material = std::make_shared<mengze::Dielectric>(1.5f);
-					scene.add(std::make_shared<mengze::Sphere>(center, 0.2f, sphere_material));
+					sphere_material = std::make_shared<Dielectric>(1.5f);
+					scene.add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
 				}
 			}
 		}
 	}
 
-	auto material1 = std::make_shared<mengze::Dielectric>(1.5f);
-	scene.add(std::make_shared<mengze::Sphere>(glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, material1));
+	auto material1 = std::make_shared<Dielectric>(1.5f);
+	scene.add(std::make_shared<Sphere>(glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, material1));
 
-	auto material2 = std::make_shared<mengze::Lambertian>(glm::vec3(0.4f, 0.2f, 0.1f));
-	scene.add(std::make_shared<mengze::Sphere>(glm::vec3(-4.0f, 1.0f, 0.0f), 1.0f, material2));
+	auto material2 = std::make_shared<Lambertian>(glm::vec3(0.4f, 0.2f, 0.1f));
+	scene.add(std::make_shared<Sphere>(glm::vec3(-4.0f, 1.0f, 0.0f), 1.0f, material2));
 
-	auto material3 = std::make_shared<mengze::Metal>(glm::vec3(0.7f, 0.6f, 0.5f), 0.0f);
-	scene.add(std::make_shared<mengze::Sphere>(glm::vec3(4.0f, 1.0f, 0.0f), 1.0f, material3));
+	auto material3 = std::make_shared<Metal>(glm::vec3(0.7f, 0.6f, 0.5f), 0.0f);
+	scene.add(std::make_shared<Sphere>(glm::vec3(4.0f, 1.0f, 0.0f), 1.0f, material3));
+
+	// auto camera = Camera({13.f, 2.f, 3.f}, {-13.f, -2.f, -3.f}, 20.0f);
+}
 }

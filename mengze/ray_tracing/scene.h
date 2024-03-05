@@ -4,7 +4,7 @@
 
 #include "hittable.h"
 
-namespace mengze
+namespace mengze::rt
 {
 
 class Scene : public Hittable

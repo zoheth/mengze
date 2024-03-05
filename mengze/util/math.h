@@ -1,4 +1,6 @@
 #pragma once
+#include "glm/ext/scalar_constants.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <cmath>
@@ -111,16 +113,16 @@ class Interval
 inline float random_float(const float min = 0.0f, const float max = 1.0f)
 {
 	static std::random_device                      rd;
-	static std::uniform_real_distribution<float> distribution(min, max);
-	static std::mt19937                           generator(rd());
+	std::uniform_real_distribution<float> distribution(min, max);
+	static std::mt19937                             generator(rd());
 	return distribution(generator);
 }
 
 // Generates a random unit vector.
 inline glm::vec3 random_unit_vector()
 {
-	auto a = random_float(0, 2 * M_PI);         // Random azimuthal angle
-	auto z = random_float(-1, 1);              // Random cosine of the zenith angle
+	auto a = random_float(0, glm::pi<float>());             // Random azimuthal angle
+	auto z = random_float(-1, 1);          // Random cosine of the zenith angle
 	auto r = sqrt(1 - z * z);                   // Radius in the xy-plane
 
 	return {r * cos(a), r * sin(a), z};
@@ -129,6 +131,19 @@ inline glm::vec3 random_unit_vector()
 inline glm::vec3 random_vec3(const float min = 0.0f, const float max = 1.0f)
 {
 	return {random_float(min, max), random_float(min, max), random_float(min, max)};
+}
+
+inline glm::vec3 random_cosine_direction()
+{
+	float r1 = random_float();
+	float r2 = random_float();
+	float z  = sqrt(1 - r2);
+
+	float phi = 2 * M_PI * r1;
+	float x   = cos(phi) * sqrt(r2);
+	float y   = sin(phi) * sqrt(r2);
+
+	return glm::vec3(x, y, z);
 }
 
 inline bool near_zero(const glm::vec3 &v, float epsilon = 1e-8f)

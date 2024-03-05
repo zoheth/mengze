@@ -2,20 +2,24 @@
 
 #include <glm/glm.hpp>
 
-#include "util/math.h"
-#include "ray.h"
 #include "material.h"
+#include "ray.h"
+#include "util/math.h"
 
-namespace mengze
+namespace mengze::rt
 {
 
 struct HitRecord
 {
-	glm::vec3 position;
-	glm::vec3 normal;
+	glm::vec3                 position;
+	glm::vec3                 normal;
 	std::shared_ptr<Material> material;
-	float     t;
-	bool      front_face;
+
+	float t;
+	float u;
+	float v;
+
+	bool front_face;
 
 	inline void set_face_normal(const Ray &r, const glm::vec3 &outward_normal)
 	{

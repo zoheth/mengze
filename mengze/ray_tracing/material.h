@@ -6,7 +6,7 @@
 #include "texture.h"
 
 
-namespace mengze
+namespace mengze::rt
 {
 
 class HitRecord;

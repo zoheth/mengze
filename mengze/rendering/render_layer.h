@@ -9,9 +9,14 @@ namespace mengze
 	{
 	public:
 		RenderLayer() = delete;
-		explicit RenderLayer(Renderer* renderer) : Layer("Render"), renderer_(renderer) {}
+	  explicit RenderLayer(const std::shared_ptr<Renderer> &renderer) :
+	      Layer("Render"), renderer_(renderer)
+	  {}
 
-		void set_renderer(Renderer* renderer) { renderer_ = renderer; }
+		void set_renderer(const std::shared_ptr<Renderer> &renderer)
+	  {
+		  renderer_ = renderer;
+	  }
 
 		void on_update(float ts) override
 		{
@@ -22,7 +27,7 @@ namespace mengze
 		void on_ui_render() override;
 
 	private:
-		Renderer* renderer_{nullptr};
+		std::shared_ptr<Renderer> renderer_{nullptr};
 		uint32_t viewport_width_{ 0 };
 		uint32_t viewport_height_{ 0 };
 	};

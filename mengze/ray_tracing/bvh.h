@@ -1,8 +1,9 @@
 #pragma once
 
-#include "aabb.h"
+#include "ray_tracing/aabb.h"
+#include "ray_tracing/hittable.h"
 
-namespace mengze
+namespace mengze::rt
 {
 class BvhNode : public Hittable
 {

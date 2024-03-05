@@ -13,28 +13,28 @@ void hidden_surface_app_setup(mengze::Application &app)
 #endif
 
 	auto zbuffer_rasterizer =
-		std::make_unique<mengze::ZbufferRasterizer>(camera, geometry);
+		std::make_shared<mengze::ZbufferRasterizer>(camera, geometry);
 	auto scanline_zbuffer_rasterizer =
-		std::make_unique<mengze::ScanlineZbufferRasterizer>(camera, geometry);
+	    std::make_shared<mengze::ScanlineZbufferRasterizer>(camera, geometry);
 	auto hierarchical_zbuffer_rasterizer =
-		std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry);
+	    std::make_shared<mengze::HierarchicalZbufferRasterizer>(camera, geometry);
 	auto hierarchical_zbuffer_octree_rasterizer =
-		std::make_unique<mengze::HierarchicalZbufferRasterizer>(camera, geometry,
+	    std::make_shared<mengze::HierarchicalZbufferRasterizer>(camera, geometry,
 		                                                        true);
 
 	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(
-		app.push_layer<mengze::RenderLayer>(zbuffer_rasterizer.get()));
+		app.push_layer<mengze::RenderLayer>(zbuffer_rasterizer));
 
 	auto *settings_layer = dynamic_cast<mengze::SettingsLayer *>(
 		app.push_layer<mengze::SettingsLayer>(render_layer));
 
-	settings_layer->push_rasterizer("Z buffer", std::unique_ptr<mengze::Rasterizer>(zbuffer_rasterizer.release()));
+	settings_layer->push_rasterizer("Z buffer", std::shared_ptr<mengze::Rasterizer>(zbuffer_rasterizer));
 	settings_layer->push_rasterizer("Scanline z buffer",
-	                                std::unique_ptr<mengze::Rasterizer>(scanline_zbuffer_rasterizer.release()));
+	                                std::shared_ptr<mengze::Rasterizer>(scanline_zbuffer_rasterizer));
 	settings_layer->push_rasterizer("Hierarchical z buffer",
-	                                std::unique_ptr<mengze::Rasterizer>(hierarchical_zbuffer_rasterizer.release()));
+	                                std::shared_ptr<mengze::Rasterizer>(hierarchical_zbuffer_rasterizer));
 	settings_layer->push_rasterizer("Hierarchical z buffer with octree",
-	                                std::unique_ptr<mengze::Rasterizer>(hierarchical_zbuffer_octree_rasterizer.release()));
+	                                std::shared_ptr<mengze::Rasterizer>(hierarchical_zbuffer_octree_rasterizer));
 
 	app.run();
 }
