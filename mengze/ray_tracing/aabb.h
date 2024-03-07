@@ -1,8 +1,8 @@
 #pragma once
 
-#include "util/math.h"
+#include "ray_tracing/math.h"
 
-namespace mengze
+namespace mengze::rt
 {
 class Aabb
 {

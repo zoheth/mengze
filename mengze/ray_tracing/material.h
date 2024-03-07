@@ -2,21 +2,35 @@
 
 #include <memory>
 
-#include "ray.h"
-#include "texture.h"
-
+#include "ray_tracing/math.h"
+#include "ray_tracing/ray.h"
+#include "ray_tracing/texture.h"
 
 namespace mengze::rt
 {
 
 class HitRecord;
 
+struct ScatterRecord
+{
+	Ray       skip_pdf_ray;
+	bool      skip_pdf;
+	glm::vec3 attenuation;
+
+	std::shared_ptr<Pdf> pdf;
+};
+
 class Material
 {
   public:
 	virtual ~Material() = default;
 
-	virtual bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const = 0;
+	virtual bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const = 0;
+
+	virtual float scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const
+	{
+		return 0.0f;
+	}
 
 	virtual glm::vec3 emitted(float u, float v, const glm::vec3 &p) const
 	{
@@ -35,7 +49,9 @@ class Lambertian : public Material
 	    albedo_(std::make_shared<SolidColor>(albedo))
 	{}
 
-	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override;
+	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
+
+	float scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const override;
 
   private:
 	std::shared_ptr<Texture> albedo_;
@@ -49,7 +65,7 @@ class Metal : public Material
 	    fuzz_(fuzz < 1.0 ? fuzz : 1.0)
 	{}
 
-	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override;
+	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
 
   private:
 	glm::vec3 albedo_;
@@ -58,12 +74,12 @@ class Metal : public Material
 
 class Dielectric : public Material
 {
-	  public:
+  public:
 	Dielectric(float refraction_index) :
 	    refraction_index_(refraction_index)
 	{}
 
-	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override;
+	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
 
   private:
 	float refraction_index_;
@@ -79,11 +95,15 @@ class Dielectric : public Material
 
 class DiffuseLight : public Material
 {
-public:
-	explicit DiffuseLight(const std::shared_ptr<Texture> &emit) : emit_(emit) {}
-	explicit DiffuseLight(const glm::vec3 &color) : emit_(std::make_shared<SolidColor>(color)) {}
+  public:
+	explicit DiffuseLight(const std::shared_ptr<Texture> &emit) :
+	    emit_(emit)
+	{}
+	explicit DiffuseLight(const glm::vec3 &color) :
+	    emit_(std::make_shared<SolidColor>(color))
+	{}
 
-	bool scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const override
+	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override
 	{
 		return false;
 	}
@@ -93,8 +113,8 @@ public:
 		return emit_->value(u, v, p);
 	}
 
-private:
+  private:
 	std::shared_ptr<Texture> emit_;
 };
 
-}        // namespace mengze
+}        // namespace mengze::rt

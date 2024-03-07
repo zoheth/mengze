@@ -1,41 +1,45 @@
 #include "material.h"
 
-#include "util/math.h"
+#include "ray_tracing/math.h"
 #include "hittable.h"
 
 namespace mengze::rt
 {
-bool Lambertian::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const
+bool Lambertian::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const
 {
-	auto scatter_direction = rec.normal + random_unit_vector();
-
-	if (near_zero(scatter_direction))
-	{
-		scatter_direction = rec.normal;
-	}
-
-	scattered   = Ray(rec.position, scatter_direction);
-	attenuation = albedo_->value(rec.u, rec.v, rec.position);
+	scatter_record.attenuation = albedo_->value(hit_record.u, hit_record.v, hit_record.position);
+	scatter_record.skip_pdf = false;
+	scatter_record.pdf = std::make_shared<CosinePdf>(hit_record.normal);
 
 	return true;
 }
 
-bool Metal::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const
+float Lambertian::scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const
 {
-	auto reflected = glm::reflect(glm::normalize(ray_in.direction()), rec.normal);
-	scattered      = Ray(rec.position, reflected + fuzz_ * random_unit_vector());
-	attenuation    = albedo_;
-
-	return glm::dot(scattered.direction(), rec.normal) > 0;
+	auto cosine = glm::dot(hit_record.normal, glm::normalize(scattered.direction()));
+	return cosine < 0 ? 0 : cosine / M_PI;
 }
 
-bool Dielectric::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &attenuation, Ray &scattered) const
+bool Metal::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const
 {
-	attenuation            = glm::vec3(1.0, 1.0, 1.0);
-	float refraction_ratio = rec.front_face ? (1.0f / refraction_index_) : refraction_index_;
+	scatter_record.attenuation = albedo_;
+	scatter_record.skip_pdf = true;
+	scatter_record.pdf         = nullptr;
+	glm::vec3 reflected        = glm::reflect(glm::normalize(ray_in.direction()), hit_record.normal);
+	scatter_record.skip_pdf_ray = Ray(hit_record.position, reflected + fuzz_ * random_in_unit_sphere());
+
+	return true;
+}
+
+bool Dielectric::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const
+{
+	scatter_record.attenuation = glm::vec3(1.0, 1.0, 1.0);
+	float refraction_ratio     = hit_record.front_face ? (1.0f / refraction_index_) : refraction_index_;
+	scatter_record.skip_pdf    = true;
+	scatter_record.pdf         = nullptr;
 
 	glm::vec3 unit_direction = glm::normalize(ray_in.direction());
-	float     cos_theta      = std::min(glm::dot(-unit_direction, rec.normal), 1.0f);
+	float     cos_theta      = std::min(glm::dot(-unit_direction, hit_record.normal), 1.0f);
 	float     sin_theta      = std::sqrt(1.0f - cos_theta * cos_theta);
 
 	bool      cannot_refract = refraction_ratio * sin_theta > 1.0f;
@@ -43,14 +47,14 @@ bool Dielectric::scatter(const Ray &ray_in, const HitRecord &rec, glm::vec3 &att
 
 	if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_float(0, 1))
 	{
-		direction = glm::reflect(unit_direction, rec.normal);
+		direction = glm::reflect(unit_direction, hit_record.normal);
 	}
 	else
 	{
-		direction = glm::refract(unit_direction, rec.normal, refraction_ratio);
+		direction = glm::refract(unit_direction, hit_record.normal, refraction_ratio);
 	}
 
-	scattered = Ray(rec.position, direction);
+	scatter_record.skip_pdf_ray = Ray(hit_record.position, direction);
 	return true;
 }
 }        // namespace mengze

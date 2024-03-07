@@ -1,5 +1,6 @@
 #include "ray_tracing/app.h"
 
+#include "ray_tracing/math.h"
 #include "rendering/render_layer.h"
 #include "ray_tracing/bvh.h"
 #include "ray_tracing/triangle.h"
@@ -40,11 +41,14 @@ void ray_tracing_app_setup(mengze::Application &app)
 	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
 	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
 
+	scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
+	scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
+
 	/*scene->add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), light));*/
 
 	auto camera = std::make_shared<Camera>(glm::vec3{278.f, 278.f, -800.f}, glm::vec3{0.f, 0.f, 800.f}, 40.0f);
 
-	auto renderer = std::make_shared<Renderer>(camera, 100, 10);
+	auto renderer = std::make_shared<Renderer>(camera, 20, 20);
 	renderer->set_scene(scene);
 
 	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(
@@ -64,8 +68,8 @@ void random_spheres()
 	{
 		for (int b = -11; b < 11; ++b)
 		{
-			float     choose_mat = mengze::random_float();
-			glm::vec3 center(a + 0.9f * mengze::random_float(), 0.2f, b + 0.9f * mengze::random_float());
+			float     choose_mat = random_float();
+			glm::vec3 center(a + 0.9f * random_float(), 0.2f, b + 0.9f * random_float());
 
 			if (glm::length(center - glm::vec3(4.0f, 0.2f, 0.0f)) > 0.9f)
 			{
@@ -74,15 +78,15 @@ void random_spheres()
 				if (choose_mat < 0.8f)
 				{
 					// diffuse
-					glm::vec3 albedo = mengze::random_vec3() * mengze::random_vec3();
+					glm::vec3 albedo = random_vec3() * random_vec3();
 					sphere_material  = std::make_shared<Lambertian>(albedo);
 					scene.add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
 				}
 				else if (choose_mat < 0.95f)
 				{
 					// metal
-					glm::vec3 albedo = mengze::random_vec3(0.5f, 1.0f);
-					float     fuzz   = mengze::random_float(0.0f, 0.5f);
+					glm::vec3 albedo = random_vec3(0.5f, 1.0f);
+					float     fuzz   = random_float(0.0f, 0.5f);
 					sphere_material  = std::make_shared<Metal>(albedo, fuzz);
 					scene.add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
 				}

@@ -61,20 +61,32 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 
 	HitRecord rec;
 
-	if (!scene_->hit(r, mengze::Interval(0.001f), rec))
+	if (!scene_->world().hit(r, Interval(0.001f), rec))
 	{
 		return glm::vec3{0, 0, 0};
 	}
 
-	Ray       scattered;
-	glm::vec3 attenuation;
-	glm::vec3 color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
+	ScatterRecord scatter_record;
+	glm::vec3     color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
 
-	if (!rec.material->scatter(r, rec, attenuation, scattered))
+	if (!rec.material->scatter(r, rec, scatter_record))
 		return color_from_emission;
 
+	if (scatter_record.skip_pdf)
+	{
+		return scatter_record.attenuation * ray_color(scatter_record.skip_pdf_ray, depth - 1);
+	}
 
-	glm::vec3 color_from_scatter = attenuation * ray_color(scattered, depth - 1);
+	auto light = std::make_shared<HittablePdf>(scene_->lights(), rec.position);
+	MixturePdf p(light, scatter_record.pdf);
+
+	Ray scattered = Ray(rec.position, p.generate());
+	auto pdf_val  = p.value(scattered.direction());
+
+	float scattering_pdf = rec.material->scattering_pdf(r, rec, scattered);
+
+	glm::vec3 sample_color = ray_color(scattered, depth - 1);
+	glm::vec3 color_from_scatter = scatter_record.attenuation * scattering_pdf * sample_color / pdf_val;
 
 	return color_from_emission + color_from_scatter;
 }
