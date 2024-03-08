@@ -10,6 +10,9 @@ class BvhNode : public Hittable
   public:
 	BvhNode() = default;
 
+private:
+	static bool box_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b, int axis);
+
   private:
 	std::shared_ptr<Hittable> left_;
 	std::shared_ptr<Hittable> right_;

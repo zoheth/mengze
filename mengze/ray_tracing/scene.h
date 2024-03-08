@@ -2,6 +2,8 @@
 #include <memory>
 #include <vector>
 
+#include <assimp/scene.h>
+
 #include "hittable.h"
 
 namespace mengze::rt
@@ -25,6 +27,8 @@ class HittableList : public Hittable
 class Scene
 {
   public:
+	void parse_3d_model(const std::string &file_path);
+
 	void add(const std::shared_ptr<Hittable> &object);
 
 	void add_light(const std::shared_ptr<Hittable> &light);
@@ -38,8 +42,15 @@ class Scene
 		return lights_;
 	}
 
+private:
+	void process_node(const aiNode *node, const aiScene *scene);
+	void process_mesh(const aiMesh *mesh, const aiScene *scene);
+	std::shared_ptr<Material> process_material(const aiMaterial *material);
+
   private:
 	HittableList world_;
 	HittableList lights_;
+
+	MaterialLibrary material_library_;
 };
 }        // namespace mengze::rt

@@ -57,4 +57,14 @@ bool Dielectric::scatter(const Ray &ray_in, const HitRecord &hit_record, Scatter
 	scatter_record.skip_pdf_ray = Ray(hit_record.position, direction);
 	return true;
 }
+
+std::shared_ptr<Material> MaterialLibrary::get(const std::string &name) const
+{
+	const auto it = materials_.find(name);
+	if (it != materials_.end())
+	{
+		return it->second;
+	}
+	return nullptr;
+}
 }        // namespace mengze

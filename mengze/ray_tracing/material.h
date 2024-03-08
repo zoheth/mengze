@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include "ray_tracing/math.h"
 #include "ray_tracing/ray.h"
@@ -115,6 +116,15 @@ class DiffuseLight : public Material
 
   private:
 	std::shared_ptr<Texture> emit_;
+};
+
+class MaterialLibrary
+{
+public:
+	std::shared_ptr<Material> get(const std::string &name) const;
+
+  private:
+	std::unordered_map<std::string, std::shared_ptr<Material>> materials_;
 };
 
 }        // namespace mengze::rt
