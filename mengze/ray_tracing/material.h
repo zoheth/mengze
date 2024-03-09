@@ -37,6 +37,11 @@ class Material
 	{
 		return glm::vec3(0.0f);
 	}
+
+	virtual bool is_light() const
+	{
+		return false;
+	}
 };
 
 class Lambertian : public Material
@@ -114,6 +119,11 @@ class DiffuseLight : public Material
 		return emit_->value(u, v, p);
 	}
 
+	bool is_light() const override
+	{
+		return true;
+	}
+
   private:
 	std::shared_ptr<Texture> emit_;
 };
@@ -122,6 +132,8 @@ class MaterialLibrary
 {
 public:
 	std::shared_ptr<Material> get(const std::string &name) const;
+
+	void add(const std::string &name, const std::shared_ptr<Material> &material);
 
   private:
 	std::unordered_map<std::string, std::shared_ptr<Material>> materials_;

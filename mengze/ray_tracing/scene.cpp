@@ -3,6 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <tinyxml2.h>
 
 #include "core/logging.h"
 #include "ray_tracing/bvh.h"
@@ -65,6 +66,59 @@ void Scene::parse_3d_model(const std::string &file_path)
 	process_node(ai_scene->mRootNode, ai_scene);
 }
 
+void Scene::parse_xml(const std::string &file_path)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError    result = doc.LoadFile(file_path.c_str());
+
+	if (result != tinyxml2::XML_SUCCESS)
+	{
+		LOGE("Failed to load xml file: {}", file_path)
+		return;
+	}
+
+	glm::vec3 position;
+	glm::vec3 look_at;
+	glm::vec3 up;
+	float     fov;
+	int width;
+	int       height;
+
+	tinyxml2::XMLElement *p_camera = doc.FirstChildElement("camera");
+	if (p_camera != nullptr)
+	{
+		p_camera->QueryIntAttribute("width", &width);
+		p_camera->QueryIntAttribute("height", &height);
+		p_camera->QueryFloatAttribute("fovy", &fov);
+
+		tinyxml2::XMLElement *pEye = p_camera->FirstChildElement("eye");
+		if (pEye != nullptr)
+		{
+			pEye->QueryFloatAttribute("x", &position.x);
+			pEye->QueryFloatAttribute("y", &position.y);
+			pEye->QueryFloatAttribute("z", &position.z);
+		}
+
+		tinyxml2::XMLElement *pLookat = p_camera->FirstChildElement("lookat");
+		if (pLookat != nullptr)
+		{
+			pLookat->QueryFloatAttribute("x", &look_at.x);
+			pLookat->QueryFloatAttribute("y", &look_at.y);
+			pLookat->QueryFloatAttribute("z", &look_at.z);
+		}
+
+		tinyxml2::XMLElement *pUp = p_camera->FirstChildElement("up");
+		if (pUp != nullptr)
+		{
+			pUp->QueryFloatAttribute("x", &up.x);
+			pUp->QueryFloatAttribute("y", &up.y);
+			pUp->QueryFloatAttribute("z", &up.z);
+		}
+	}
+
+	camera_ = std::make_shared<Camera>(position, look_at, up, fov);
+}
+
 void Scene::add(const std::shared_ptr<Hittable> &object)
 {
 	world_.add(object);
@@ -91,7 +145,7 @@ void Scene::process_node(const aiNode *node, const aiScene *scene)
 
 void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 {
-	HittableList triangle_list;
+	std::shared_ptr<HittableList> triangle_list = std::make_shared<HittableList>();
 
 	std::vector<glm::vec3> vertices;
 	vertices.reserve(mesh->mNumVertices);
@@ -101,6 +155,11 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 	{
 		const aiMaterial *ai_material = scene->mMaterials[mesh->mMaterialIndex];
 		material                      = process_material(ai_material);
+	}
+
+	if (mesh->mNumVertices > 20)
+	{
+		return;
 	}
 
 	for (size_t i = 0; i < mesh->mNumVertices; i++)
@@ -121,12 +180,38 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		const auto &v1 = vertices[face.mIndices[1]];
 		const auto &v2 = vertices[face.mIndices[2]];
 
-		triangle_list.add(std::make_shared<Triangle>(v0, v1, v2, material));
+		triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
+	}
+
+	add(triangle_list);
+	if (material->is_light())
+	{
+		add_light(triangle_list);
 	}
 }
 
-std::shared_ptr<Material> Scene::process_material(const aiMaterial *material)
+std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 {
-	return nullptr;
+	aiString name;
+	ai_material->Get(AI_MATKEY_NAME, name);
+
+	if (auto material = material_library_.get(name.C_Str()))
+	{
+		return material;
+	}
+
+	const std::string mat_name = name.C_Str();
+
+	if (mat_name=="Light")
+	{
+		return std::make_shared<DiffuseLight>(glm::vec3(15.0f, 15.0f, 15.0f));
+	}
+
+	aiColor3D color;
+	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+	{
+		return std::make_shared<Lambertian>(glm::vec3(color.r, color.g, color.b));
+	}
+	
 }
 }        // namespace mengze::rt

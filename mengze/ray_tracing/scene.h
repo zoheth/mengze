@@ -4,7 +4,8 @@
 
 #include <assimp/scene.h>
 
-#include "hittable.h"
+#include "ray_tracing/hittable.h"
+#include "ray_tracing/camera.h"
 
 namespace mengze::rt
 {
@@ -29,9 +30,16 @@ class Scene
   public:
 	void parse_3d_model(const std::string &file_path);
 
+	void parse_xml(const std::string &file_path);
+
 	void add(const std::shared_ptr<Hittable> &object);
 
 	void add_light(const std::shared_ptr<Hittable> &light);
+
+	std::shared_ptr<Camera> camera() const
+	{
+		return camera_;
+	}
 
 	HittableList &world()
 	{
@@ -45,11 +53,13 @@ class Scene
 private:
 	void process_node(const aiNode *node, const aiScene *scene);
 	void process_mesh(const aiMesh *mesh, const aiScene *scene);
-	std::shared_ptr<Material> process_material(const aiMaterial *material);
+	std::shared_ptr<Material> process_material(const aiMaterial *ai_material);
 
   private:
 	HittableList world_;
 	HittableList lights_;
+
+	std::shared_ptr<Camera> camera_;
 
 	MaterialLibrary material_library_;
 };

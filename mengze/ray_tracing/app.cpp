@@ -16,39 +16,45 @@ void ray_tracing_app_setup(mengze::Application &app)
 {
 	auto scene = std::make_shared<Scene>();
 
-	auto red   = std::make_shared<Lambertian>(glm::vec3{.65, .05, .05});
-	auto white = std::make_shared<Lambertian>(glm::vec3{.73, .73, .73});
-	auto green = std::make_shared<Lambertian>(glm::vec3{.12, .45, .15});
-	auto light = std::make_shared<DiffuseLight>(glm::vec3{15, 15, 15});
+	//auto red   = std::make_shared<Lambertian>(glm::vec3{.65, .05, .05});
+	//auto white = std::make_shared<Lambertian>(glm::vec3{.73, .73, .73});
+	//auto green = std::make_shared<Lambertian>(glm::vec3{.12, .45, .15});
+	//auto light = std::make_shared<DiffuseLight>(glm::vec3{15, 15, 15});
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 555, 0), glm::vec3(555, 0, 555), green));
-	scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(555, 0, 555), green));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 555, 0), glm::vec3(555, 0, 555), green));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(555, 0, 555), green));
 
-	/*scene->add(std::make_shared<Quad>(glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), green));*/
+	///*scene->add(std::make_shared<Quad>(glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), green));*/
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), red));
-	scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(0, 555, 555), glm::vec3(0, 0, 555), red));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), red));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(0, 555, 555), glm::vec3(0, 0, 555), red));
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(555, 0, 0), glm::vec3(0, 0, 555), white));
-	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 0, 555), glm::vec3(0, 0, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 0), glm::vec3(555, 0, 0), glm::vec3(0, 0, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 0), glm::vec3(555, 0, 555), glm::vec3(0, 0, 555), white));
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 555), glm::vec3(0, 555, 555), white));
-	scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 555), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 555), glm::vec3(0, 555, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(555, 0, 555), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(555, 555, 0), glm::vec3(0, 555, 555), white));
-	scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(0, 555, 0), glm::vec3(555, 555, 0), glm::vec3(0, 555, 555), white));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(555, 555, 0), glm::vec3(555, 555, 555), glm::vec3(0, 555, 555), white));
 
-	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
-	scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
+	//scene->add(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
 
-	scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
-	scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
+	//scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 227), glm::vec3(343, 554, 332), light));
+	//scene->add_light(std::make_shared<Triangle>(glm::vec3(213, 554, 227), glm::vec3(343, 554, 332), glm::vec3(213, 554, 332), light));
 
-	/*scene->add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), light));*/
+	///*scene->add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), light));*/
 
-	auto camera = std::make_shared<Camera>(glm::vec3{278.f, 278.f, -800.f}, glm::vec3{0.f, 0.f, 800.f}, 40.0f);
+	//auto camera = std::make_shared<Camera>(glm::vec3{278.f, 278.f, -800.f}, glm::vec3{0.f, 0.f, 800.f}, 40.0f);
+	//auto renderer = std::make_shared<Renderer>(camera, 10, 20);
 
-	auto renderer = std::make_shared<Renderer>(camera, 20, 20);
+	scene->parse_3d_model("example-scenes-cg23\\cornell-box\\cornell-box.obj");
+	scene->parse_xml("example-scenes-cg23\\cornell-box\\cornell-box.xml");
+
+	auto renderer = std::make_shared<Renderer>(scene->camera(), 10, 20);
+
+
 	renderer->set_scene(scene);
 
 	auto *render_layer = dynamic_cast<mengze::RenderLayer *>(

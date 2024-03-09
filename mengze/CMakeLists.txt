@@ -19,4 +19,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     spdlog
     ctpl
     glfw
-    assimp)
+    assimp
+    tinyxml2)

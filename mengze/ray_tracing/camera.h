@@ -18,6 +18,8 @@ class Camera : public mengze::Camera
   public:
 	Camera(glm::vec3 position, glm::vec3 forward, float fov);
 
+	Camera(glm::vec3 position, glm::vec3 look_at, glm::vec3 up, float fov);
+
 
 	Ray get_ray(float i, float j) const
 	{

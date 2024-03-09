@@ -18,6 +18,8 @@ namespace mengze
 
 		Camera(glm::vec3 position, glm::vec3 forward, float fov);
 
+		Camera(glm::vec3 position, glm::vec3 look_at, glm::vec3 up, float fov);
+
 		void on_update(float delta_time);
 		void on_resize(uint32_t width, uint32_t height);
 

@@ -21,6 +21,16 @@ Camera::Camera(glm::vec3 position, glm::vec3 forward, float fov) :
 	update_view_matrix();
 }
 
+Camera::Camera(glm::vec3 position, glm::vec3 look_at, glm::vec3 up, float fov)
+{
+	position_          = position;
+	forward_direction_ = glm::normalize(look_at - position);
+	up_direction_      = glm::normalize(up);
+	fov_               = fov;
+
+	update_view_matrix();
+}
+
 void Camera::on_update(float delta_time)
 {
 	if (mode_ == CameraMode::ROAMING)

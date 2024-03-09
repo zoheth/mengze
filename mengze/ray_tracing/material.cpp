@@ -67,4 +67,9 @@ std::shared_ptr<Material> MaterialLibrary::get(const std::string &name) const
 	}
 	return nullptr;
 }
+
+void MaterialLibrary::add(const std::string &name, const std::shared_ptr<Material> &material)
+{
+	materials_[name] = material;
+}
 }        // namespace mengze
