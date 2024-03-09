@@ -180,14 +180,19 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		const auto &v1 = vertices[face.mIndices[1]];
 		const auto &v2 = vertices[face.mIndices[2]];
 
-		triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
+		//triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
+		add(std::make_shared<Triangle>(v0, v1, v2, material));
+		if (material->is_light())
+		{
+			add_light(std::make_shared<Triangle>(v0, v1, v2, material));
+		}
 	}
 
-	add(triangle_list);
+	/*add(triangle_list);
 	if (material->is_light())
 	{
 		add_light(triangle_list);
-	}
+	}*/
 }
 
 std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)

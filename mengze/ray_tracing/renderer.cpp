@@ -32,7 +32,13 @@ void Renderer::on_resize(uint32_t width, uint32_t height)
 void Renderer::render()
 {
 	camera_->initialize();
-	for (uint32_t y = cur_y_; y < get_height(); ++y)
+	if (cur_y_ >= get_height())
+	{
+		cur_y_ = 0;
+		LOGW("Reset cur_y_ to 0")
+	}
+	uint32_t y = cur_y_;
+	for (; y < get_height(); ++y)
 	{
 		for (uint32_t x = 0; x < get_width(); ++x)
 		{
@@ -48,10 +54,10 @@ void Renderer::render()
 		}
 		if (y - cur_y_ > 20)
 		{
-			cur_y_ = y;
 			break;
 		}
 	}
+	cur_y_ = y;
 }
 
 glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
