@@ -32,11 +32,11 @@ void Renderer::on_resize(uint32_t width, uint32_t height)
 void Renderer::render()
 {
 	camera_->initialize();
-	if (cur_y_ >= get_height())
+	/*if (cur_y_ >= get_height())
 	{
 		cur_y_ = 0;
 		LOGW("Reset cur_y_ to 0")
-	}
+	}*/
 	uint32_t y = cur_y_;
 	for (; y < get_height(); ++y)
 	{
@@ -72,8 +72,10 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 		return glm::vec3{0, 0, 0};
 	}
 
+
 	ScatterRecord scatter_record;
 	glm::vec3     color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
+
 
 	if (!rec.material->scatter(r, rec, scatter_record))
 		return color_from_emission;

@@ -50,14 +50,14 @@ void ray_tracing_app_setup(mengze::Application &app)
 	/*scene->add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), light));*/
 
 	auto camera = std::make_shared<Camera>(glm::vec3{278.f, 278.f, -800.f}, glm::vec3{0.f, 0.f, 800.f}, 40.0f);
-	auto renderer = std::make_shared<Renderer>(camera, 10, 20);
+	auto renderer = std::make_shared<Renderer>(camera, 2, 5);
 
 #else
 
 	scene->parse_3d_model("example-scenes-cg23\\cornell-box\\cornell-box.obj");
 	scene->parse_xml("example-scenes-cg23\\cornell-box\\cornell-box.xml");
 
-	auto renderer = std::make_shared<Renderer>(scene->camera(), 1, 5);
+	auto renderer = std::make_shared<Renderer>(scene->camera(), 20, 10);
 #endif
 
 

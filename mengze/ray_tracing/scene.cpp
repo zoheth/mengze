@@ -180,19 +180,19 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		const auto &v1 = vertices[face.mIndices[1]];
 		const auto &v2 = vertices[face.mIndices[2]];
 
-		//triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
-		add(std::make_shared<Triangle>(v0, v1, v2, material));
+		triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
+		/*add(std::make_shared<Triangle>(v0, v1, v2, material));
 		if (material->is_light())
 		{
 			add_light(std::make_shared<Triangle>(v0, v1, v2, material));
-		}
+		}*/
 	}
 
-	/*add(triangle_list);
+	add(triangle_list);
 	if (material->is_light())
 	{
 		add_light(triangle_list);
-	}*/
+	}
 }
 
 std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
@@ -209,7 +209,7 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 
 	if (mat_name=="Light")
 	{
-		return std::make_shared<DiffuseLight>(glm::vec3(15.0f, 15.0f, 15.0f));
+		return std::make_shared<DiffuseLight>(glm::vec3(34.0f, 24.0f, 8.0f));
 	}
 
 	aiColor3D color;
