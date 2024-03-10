@@ -3,6 +3,24 @@
 #include <execution>
 
 #include "core/logging.h"
+#include "core/timer.h"
+
+ namespace
+{
+ std::atomic<int> pixels_rendered{0};
+ int              total_pixels;
+ void print_progress()
+{
+	while (pixels_rendered < total_pixels)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		int progress = 100.0 * pixels_rendered / total_pixels;
+		std::cout << "\rProgress: " << progress << "%" << std::flush;
+	}
+	std::cout << "\r" << std::flush;
+ }
+
+ }
 
 namespace mengze::rt
 {
@@ -44,9 +62,15 @@ void Renderer::render()
 	{
 		return;
 	}
+
+	LOGI("Rendering frame: {}", frame_index_)
 #define MULTITHREAD_RENDER 1
 
 #if MULTITHREAD_RENDER
+	std::thread progress_thread(print_progress);
+
+	total_pixels = get_width() * get_height();
+
 	std::for_each(std::execution::par, image_vertical_iter_.begin(), image_vertical_iter_.end(), [this](uint32_t y) {
 		std::for_each(std::execution::par, image_horizontal_iter_.begin(), image_horizontal_iter_.end(), [this, y](uint32_t x) {
 			Ray       ray   = camera_->get_ray(x, y);
@@ -56,8 +80,12 @@ void Renderer::render()
 			accumulated_color /= static_cast<float>(frame_index_);
 
 			set_pixel(x, y, accumulated_color);
+			++pixels_rendered;
 		});
 	});
+
+	progress_thread.join();
+	pixels_rendered = 0;
 #else
 
 	for (uint32_t y = 0; y < get_height(); ++y)

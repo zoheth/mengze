@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #define LOGGER_FORMAT "[%^%l%$] %v"
-#define PROJECT_NAME "VulkanSamples"
+#define PROJECT_NAME "Mengze"
 
 // Mainly for IDEs
 #ifndef ROOT_PATH_SIZE

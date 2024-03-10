@@ -1,7 +1,7 @@
 #pragma once
 
+#include "core/timer.h"
 #include "rendering/renderer.h"
-
 #include "ray_tracing/camera.h"
 #include "ray_tracing/scene.h"
 
@@ -22,6 +22,7 @@ class Renderer : public mengze::Renderer
 	glm::vec3 ray_color(const Ray &r, int depth) const;
 
   private:
+	Timer timer_;
 	std::shared_ptr<mengze::rt::Scene> scene_{nullptr};
 	std::shared_ptr<mengze::rt::Camera> camera_{nullptr};
 

@@ -188,7 +188,7 @@ void Scene::process_node(const aiNode *node, const aiScene *scene)
 
 void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 {
-	LOGI("start")
+	LOGI("Processing mesh: {}", mesh->mName.C_Str())
 	/*std::shared_ptr<HittableList> triangle_list = std::make_shared<HittableList>();*/
 
 	std::vector<std::shared_ptr<Hittable>> triangles;
@@ -275,7 +275,7 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		}
 	}
 
-	LOGI("end")
+	LOGI("Processed mesh: {}", mesh->mName.C_Str())
 }
 
 std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)

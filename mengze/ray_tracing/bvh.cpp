@@ -88,6 +88,7 @@ float BvhNode::pdf_value(const glm::vec3 &origin, const glm::vec3 &direction) co
 glm::vec3 BvhNode::random(const glm::vec3 &origin) const
 {
 	auto index = static_cast<int>(random_float() * root_all_objects_.size());
+	index      = std::min(index, static_cast<int>(root_all_objects_.size()) - 1);
 	return root_all_objects_[index]->random(origin);
 }
 
