@@ -1,5 +1,7 @@
 #include "ray_tracing/scene.h"
 
+#include <sstream>
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -128,6 +130,30 @@ void Scene::parse_xml(const std::string &file_path)
 	}
 
 	camera_ = std::make_shared<Camera>(position, look_at, up, fov);
+
+	tinyxml2::XMLElement *light_element = doc.FirstChildElement("light");
+	while (light_element)
+	{
+		const char *mtlname      = light_element->Attribute("mtlname");
+		const char *radiance_str = light_element->Attribute("radiance");
+
+		if (mtlname && radiance_str)
+		{
+			// Split the radiance string by commas and convert to glm::vec3
+			std::istringstream iss(radiance_str);
+			std::string        val;
+			glm::vec3          radiance;
+			int                idx = 0;
+			while (std::getline(iss, val, ',') && idx < 3)
+			{
+				radiance[idx++] = std::stof(val);
+			}
+
+			lights_radiance_[std::string(mtlname)] = radiance;
+		}
+
+		light_element = light_element->NextSiblingElement("light");
+	}
 }
 
 void Scene::add(const std::shared_ptr<Hittable> &object)
@@ -171,10 +197,10 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		material                      = process_material(ai_material);
 	}
 
-	if (mesh->mNumVertices > 20)
-	{
-		return;
-	}
+	//if (mesh->mNumVertices > 20)
+	//{
+	//    return;
+	//}
 
 	for (size_t i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -210,14 +236,14 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 	    add_light(triangle_list);
 	}*/
 
-	if (triangles.size() > 0)
+	if (triangles.size() < 0)
 	{
 		auto bvh_tree = std::make_shared<BvhNode>(triangles, 0, triangles.size());
 		add(bvh_tree);
 
 		if (material->is_light())
 		{
-		    add_light(bvh_tree);
+			add_light(bvh_tree);
 		}
 		/*for (const auto &triangle : triangles)
 		{
@@ -255,10 +281,16 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 
 	const std::string mat_name = name.C_Str();
 
-	if (mat_name == "Light")
+	auto it = lights_radiance_.find(mat_name);
+	if (it != lights_radiance_.end())
+	{
+		return std::make_shared<DiffuseLight>(it->second);
+	}
+
+	/*if (mat_name == "Light")
 	{
 		return std::make_shared<DiffuseLight>(glm::vec3(34.0f, 24.0f, 8.0f));
-	}
+	}*/
 
 	aiColor3D color;
 	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color))

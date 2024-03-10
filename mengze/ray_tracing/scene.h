@@ -64,6 +64,8 @@ private:
 	HittableList world_;
 	HittableList lights_;
 
+	std::unordered_map<std::string, glm::vec3> lights_radiance_;
+
 	std::shared_ptr<Camera> camera_;
 
 	MaterialLibrary material_library_;
