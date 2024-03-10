@@ -11,7 +11,7 @@ class BvhNode final : public Hittable
   public:
 	BvhNode(const HittableList &list);
 
-	BvhNode(const std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, bool is_root = true);
+	BvhNode(const std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, bool is_root = true, int depth = 0);
 
 	bool hit(const Ray &r, Interval ray_t, HitRecord &rec) const override;
 
