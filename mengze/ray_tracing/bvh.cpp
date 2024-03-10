@@ -1,16 +1,8 @@
 #include "ray_tracing/bvh.h"
 
-#include <future>
-#include <thread>
-
-#include <ctpl_stl.h>
+#include <execution>
 
 #include "scene.h"
-
-namespace 
-{
-	ctpl::thread_pool s_thread_pool(8);
-}
 
 namespace mengze::rt
 {
@@ -18,12 +10,12 @@ BvhNode::BvhNode(const HittableList &list) :
     BvhNode(list.objects(), 0, list.objects().size())
 {}
 
-BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end, bool is_root, int depth)
+BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end, bool is_root)
 {
 	auto objects = src_objects;
 	if (is_root)
 	{
-		is_root_          = true;
+		is_root_ = true;
 		root_all_objects_ = src_objects;
 	}
 
@@ -52,36 +44,12 @@ BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size
 	}
 	else
 	{
-		std::sort(objects.begin() + start, objects.begin() + end, comparator);
+		std::sort(std::execution::par, objects.begin() + start, objects.begin() + end, comparator);
+		//std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
 		auto mid = start + object_span / 2;
-
-		if (depth == 3)
-		{
-			/*auto left_future = std::async(std::launch::async, [&objects, start, mid]() {
-				return std::make_shared<BvhNode>(objects, start, mid, false);
-			});
-
-			auto right_future = std::async(std::launch::async, [&objects, mid, end]() {
-				return std::make_shared<BvhNode>(objects, mid, end, false);
-			});*/
-
-			auto left_future = s_thread_pool.push([=, &objects](int id) {
-				return std::make_shared<BvhNode>(objects, start, mid, false, depth+1);
-			});
-
-			auto right_future = s_thread_pool.push([=, &objects](int id) {
-				return std::make_shared<BvhNode>(objects, mid, end, false, depth+1);
-			});
-
-			left_  = left_future.get();
-			right_ = right_future.get();
-		}
-		else
-		{
-			left_  = std::make_shared<BvhNode>(objects, start, mid, false);
-			right_ = std::make_shared<BvhNode>(objects, mid, end, false);
-		}
+		left_    = std::make_shared<BvhNode>(objects, start, mid, false);
+		right_   = std::make_shared<BvhNode>(objects, mid, end, false);
 	}
 
 	auto box_left  = left_->bounding_box();
