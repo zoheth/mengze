@@ -18,7 +18,7 @@ namespace mengze
 		renderer_->render();
 		renderer_->present();
 
-		auto image = renderer_->get_film();
+		auto image = renderer_->get_final_image();
 
 		if (image)
 		{

@@ -53,6 +53,7 @@ float HittableList::pdf_value(const glm::vec3 &origin, const glm::vec3 &directio
 glm::vec3 HittableList::random(const glm::vec3 &origin) const
 {
 	auto index = static_cast<int>(random_float() * objects_.size());
+	index      = std::min(index, static_cast<int>(objects_.size()) - 1);
 	return objects_[index]->random(origin);
 }
 
@@ -64,6 +65,11 @@ const std::vector<std::shared_ptr<Hittable>> &HittableList::objects() const
 Aabb HittableList::bounding_box() const
 {
 	return box_;
+}
+
+bool HittableList::empty() const
+{
+	return objects_.empty();
 }
 
 void Scene::parse_3d_model(const std::string &file_path)
@@ -197,10 +203,13 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		material                      = process_material(ai_material);
 	}
 
-	//if (mesh->mNumVertices > 20)
-	//{
-	//    return;
-	//}
+#define SIMPLIFY_BOX 0
+#if SIMPLIFY_BOX
+	if (mesh->mNumVertices > 20)
+	{
+		return;
+	}
+#endif
 
 	for (size_t i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -236,7 +245,7 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 	    add_light(triangle_list);
 	}*/
 
-	if (triangles.size() < 0)
+	if (triangles.size() > 0)
 	{
 		auto bvh_tree = std::make_shared<BvhNode>(triangles, 0, triangles.size());
 		add(bvh_tree);
@@ -289,7 +298,7 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 
 	/*if (mat_name == "Light")
 	{
-		return std::make_shared<DiffuseLight>(glm::vec3(34.0f, 24.0f, 8.0f));
+	    return std::make_shared<DiffuseLight>(glm::vec3(34.0f, 24.0f, 8.0f));
 	}*/
 
 	aiColor3D color;

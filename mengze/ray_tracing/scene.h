@@ -25,6 +25,8 @@ class HittableList : public Hittable
 
 	Aabb bounding_box() const override;
 
+	bool empty() const;
+
   private:
 	std::vector<std::shared_ptr<Hittable>> objects_;
 	Aabb box_;
