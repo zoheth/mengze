@@ -44,8 +44,8 @@ BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size
 	}
 	else
 	{
-		std::sort(std::execution::par, objects.begin() + start, objects.begin() + end, comparator);
-		//std::sort(objects.begin() + start, objects.begin() + end, comparator);
+		//std::sort(std::execution::par, objects.begin() + start, objects.begin() + end, comparator);
+		std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
 		auto mid = start + object_span / 2;
 		left_    = std::make_shared<BvhNode>(objects, start, mid, false);
