@@ -21,8 +21,13 @@ class HittableList : public Hittable
 
 	glm::vec3 random(const glm::vec3 &origin) const override;
 
+	const std::vector<std::shared_ptr<Hittable>> &objects() const;
+
+	Aabb bounding_box() const override;
+
   private:
 	std::vector<std::shared_ptr<Hittable>> objects_;
+	Aabb box_;
 };
 
 class Scene

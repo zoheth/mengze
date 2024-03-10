@@ -5,13 +5,23 @@
 
 namespace mengze::rt
 {
-class BvhNode : public Hittable
+class HittableList;
+class BvhNode final : public Hittable
 {
   public:
-	BvhNode() = default;
+	BvhNode(const HittableList &list);
+
+	BvhNode(const std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end);
+
+	bool hit(const Ray &r, Interval ray_t, HitRecord &rec) const override;
+
+	Aabb bounding_box() const override;
 
 private:
 	static bool box_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b, int axis);
+	static bool box_x_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b);
+	static bool box_y_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b);
+	static bool box_z_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b);
 
   private:
 	std::shared_ptr<Hittable> left_;

@@ -57,7 +57,7 @@ void ray_tracing_app_setup(mengze::Application &app)
 	scene->parse_3d_model("example-scenes-cg23\\cornell-box\\cornell-box.obj");
 	scene->parse_xml("example-scenes-cg23\\cornell-box\\cornell-box.xml");
 
-	auto renderer = std::make_shared<Renderer>(scene->camera(), 20, 10);
+	auto renderer = std::make_shared<Renderer>(scene->camera(), 1, 2);
 #endif
 
 

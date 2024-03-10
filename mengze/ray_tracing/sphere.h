@@ -44,9 +44,16 @@ class Sphere : public Hittable
 		return true;
 	}
 
+	Aabb bounding_box() const override
+	{
+		return b_box_;
+	}
+
   private:
 	glm::vec3                 center_;
 	float                     radius_{0.f};
 	std::shared_ptr<Material> material_;
+
+	Aabb b_box_;
 };
 }        // namespace mengze

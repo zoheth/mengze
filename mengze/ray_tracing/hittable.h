@@ -2,8 +2,9 @@
 
 #include <glm/glm.hpp>
 
-#include "material.h"
-#include "ray.h"
+#include "ray_tracing/material.h"
+#include "ray_tracing/ray.h"
+#include "ray_tracing/aabb.h"
 #include "ray_tracing/math.h"
 
 namespace mengze::rt
@@ -37,6 +38,8 @@ class Hittable
 	Hittable &operator=(Hittable &&) = delete;
 
 	virtual bool hit(const Ray &r, Interval ray_t, HitRecord &rec) const = 0;
+
+	virtual Aabb bounding_box() const = 0;
 
 	virtual float pdf_value(const glm::vec3 &origin, const glm::vec3 &direction) const
 	{

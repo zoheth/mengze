@@ -14,6 +14,7 @@ namespace mengze::rt
 void HittableList::add(const std::shared_ptr<Hittable> &object)
 {
 	objects_.push_back(object);
+	box_ = Aabb(box_, object->bounding_box());
 }
 
 bool HittableList::hit(const Ray &r, Interval ray_t, HitRecord &rec) const
@@ -53,6 +54,16 @@ glm::vec3 HittableList::random(const glm::vec3 &origin) const
 	return objects_[index]->random(origin);
 }
 
+const std::vector<std::shared_ptr<Hittable>> &HittableList::objects() const
+{
+	return objects_;
+}
+
+Aabb HittableList::bounding_box() const
+{
+	return box_;
+}
+
 void Scene::parse_3d_model(const std::string &file_path)
 {
 	Assimp::Importer importer;
@@ -81,7 +92,7 @@ void Scene::parse_xml(const std::string &file_path)
 	glm::vec3 look_at;
 	glm::vec3 up;
 	float     fov;
-	int width;
+	int       width;
 	int       height;
 
 	tinyxml2::XMLElement *p_camera = doc.FirstChildElement("camera");
@@ -145,7 +156,10 @@ void Scene::process_node(const aiNode *node, const aiScene *scene)
 
 void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 {
-	std::shared_ptr<HittableList> triangle_list = std::make_shared<HittableList>();
+	LOGI("start")
+	/*std::shared_ptr<HittableList> triangle_list = std::make_shared<HittableList>();*/
+
+	std::vector<std::shared_ptr<Hittable>> triangles;
 
 	std::vector<glm::vec3> vertices;
 	vertices.reserve(mesh->mNumVertices);
@@ -180,19 +194,46 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		const auto &v1 = vertices[face.mIndices[1]];
 		const auto &v2 = vertices[face.mIndices[2]];
 
-		triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
+		// triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
 		/*add(std::make_shared<Triangle>(v0, v1, v2, material));
 		if (material->is_light())
 		{
-			add_light(std::make_shared<Triangle>(v0, v1, v2, material));
+		    add_light(std::make_shared<Triangle>(v0, v1, v2, material));
 		}*/
+
+		triangles.push_back(std::make_shared<Triangle>(v0, v1, v2, material));
 	}
 
-	add(triangle_list);
+	/*add(triangle_list);
 	if (material->is_light())
 	{
-		add_light(triangle_list);
+	    add_light(triangle_list);
+	}*/
+
+	if (triangles.size() > 0)
+	{
+		auto bvh_tree = std::make_shared<BvhNode>(triangles, 0, triangles.size());
+		add(bvh_tree);
+
+		if (material->is_light())
+		{
+			add_light(bvh_tree);
+		}
 	}
+
+	else
+	{
+		for (const auto &triangle : triangles)
+		{
+			add(triangle);
+			if (material->is_light())
+			{
+				add_light(triangle);
+			}
+		}
+	}
+
+	LOGI("end")
 }
 
 std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
@@ -207,7 +248,7 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 
 	const std::string mat_name = name.C_Str();
 
-	if (mat_name=="Light")
+	if (mat_name == "Light")
 	{
 		return std::make_shared<DiffuseLight>(glm::vec3(34.0f, 24.0f, 8.0f));
 	}
@@ -217,6 +258,5 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 	{
 		return std::make_shared<Lambertian>(glm::vec3(color.r, color.g, color.b));
 	}
-	
 }
 }        // namespace mengze::rt

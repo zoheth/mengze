@@ -73,4 +73,18 @@ glm::vec3 Triangle::random(const glm::vec3 &origin) const
 	auto random_point = v0_ + r1 * (v1_ - v0_) + r2 * (v2_ - v0_);
 	return random_point - origin;
 }
+
+Aabb Triangle::bounding_box() const
+{
+	return b_box_;
+}
+
+void Triangle::set_bounding_box()
+{
+	glm::vec3 min_v = glm::min(v0_, glm::min(v1_, v2_));
+
+	glm::vec3 max_v = glm::max(v0_, glm::max(v1_, v2_));
+
+	b_box_ = Aabb(min_v, max_v);
+}
 }        // namespace mengze::rt

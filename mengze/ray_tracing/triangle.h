@@ -21,17 +21,12 @@ class Triangle : public Hittable
 
 	glm::vec3 random(const glm::vec3 &origin) const override;
 
-  private:
-	void set_bounding_box()
-	{
-		glm::vec3 min_v = glm::min(v0_, glm::min(v1_, v2_));
-
-		glm::vec3 max_v = glm::max(v0_, glm::max(v1_, v2_));
-
-		b_box_ = Aabb(min_v, max_v);
-	}
+	Aabb bounding_box() const override;
 
   private:
+	void set_bounding_box();
+
+private:
 	glm::vec3 v0_;
 	glm::vec3 v1_;
 	glm::vec3 v2_;

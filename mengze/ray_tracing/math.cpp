@@ -21,6 +21,17 @@ float Interval::max() const
 	return max_;
 }
 
+float & Interval::min()
+{
+	return min_;
+}
+
+float & Interval::max()
+{
+	return max_;
+}
+
+
 float Interval::size() const
 {
 	return max_ - min_;

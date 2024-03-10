@@ -1,6 +1,92 @@
 #include "ray_tracing/bvh.h"
 
+#include "scene.h"
+
 namespace mengze::rt
 {
+BvhNode::BvhNode(const HittableList &list) :
+    BvhNode(list.objects(), 0, list.objects().size())
+{}
 
+BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end)
+{
+	auto objects = src_objects;
+	auto axis       = static_cast<int>(3 * random_float());
+	auto comparator = (axis == 0) ? box_x_compare : (axis == 1) ? box_y_compare :
+	                                                              box_z_compare;
+
+	auto object_span = end - start;
+
+	if (object_span == 1)
+	{
+		left_ = right_ = objects[start];
+	}
+	else if (object_span == 2)
+	{
+		if (comparator(objects[start], objects[start + 1]))
+		{
+			left_  = objects[start];
+			right_ = objects[start + 1];
+		}
+		else
+		{
+			left_  = objects[start + 1];
+			right_ = objects[start];
+		}
+	}
+	else
+	{
+		std::sort(objects.begin() + start, objects.begin() + end, comparator);
+
+		auto mid = start + object_span / 2;
+		left_    = std::make_shared<BvhNode>(objects, start, mid);
+		right_   = std::make_shared<BvhNode>(objects, mid, end);
+	}
+
+	auto box_left  = left_->bounding_box();
+	auto box_right = right_->bounding_box();
+
+	box_ = Aabb(box_left, box_right);
 }
+
+bool BvhNode::hit(const Ray &r, Interval ray_t, HitRecord &rec) const
+{
+	if (!box_.hit(r, ray_t))
+	{
+		return false;
+	}
+
+	auto hit_left  = left_->hit(r, ray_t, rec);
+	auto hit_right = right_->hit(r, Interval(ray_t.min(), hit_left ? rec.t : ray_t.max()), rec);
+
+	return hit_left || hit_right;
+}
+
+Aabb BvhNode::bounding_box() const
+{
+	return box_;
+}
+
+bool BvhNode::box_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b, int axis)
+{
+	auto box_a = a->bounding_box();
+	auto box_b = b->bounding_box();
+
+	return box_a.axis(axis).min() < box_b.axis(axis).min();
+}
+
+bool BvhNode::box_x_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b)
+{
+	return box_compare(a, b, 0);
+}
+
+bool BvhNode::box_y_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b)
+{
+	return box_compare(a, b, 1);
+}
+
+bool BvhNode::box_z_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b)
+{
+	return box_compare(a, b, 2);
+}
+}        // namespace mengze::rt

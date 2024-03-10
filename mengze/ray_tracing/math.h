@@ -20,9 +20,18 @@ class Interval
 
 	Interval(float min, float max = std::numeric_limits<float>::infinity());
 
+	Interval(const Interval &a, const Interval &b) :
+		min_(std::min(a.min_, b.min_)),
+		max_(std::max(a.max_, b.max_))
+	{}
+
 	float min() const;
 
 	float max() const;
+
+	float &min();
+
+	float &max();
 
 	float size() const;
 
