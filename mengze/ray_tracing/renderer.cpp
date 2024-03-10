@@ -72,7 +72,7 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 		return glm::vec3{0, 0, 0};
 	}
 
-	return glm::vec3{1, 0, 0};
+	// return glm::vec3{1, 0, 0};
 	ScatterRecord scatter_record;
 	glm::vec3     color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
 

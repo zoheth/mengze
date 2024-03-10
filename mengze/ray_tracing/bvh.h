@@ -11,11 +11,15 @@ class BvhNode final : public Hittable
   public:
 	BvhNode(const HittableList &list);
 
-	BvhNode(const std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end);
+	BvhNode(const std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, bool is_root = true);
 
 	bool hit(const Ray &r, Interval ray_t, HitRecord &rec) const override;
 
 	Aabb bounding_box() const override;
+
+	float pdf_value(const glm::vec3 &origin, const glm::vec3 &direction) const override;
+
+	glm::vec3 random(const glm::vec3 &origin) const override;
 
 private:
 	static bool box_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b, int axis);
@@ -26,6 +30,9 @@ private:
   private:
 	std::shared_ptr<Hittable> left_;
 	std::shared_ptr<Hittable> right_;
+
+	bool                                   is_root_;
+	std::vector<std::shared_ptr<Hittable>> root_all_objects_; // only used for root node
 
 	Aabb box_;
 };

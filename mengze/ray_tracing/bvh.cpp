@@ -8,9 +8,15 @@ BvhNode::BvhNode(const HittableList &list) :
     BvhNode(list.objects(), 0, list.objects().size())
 {}
 
-BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end)
+BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end, bool is_root)
 {
 	auto objects = src_objects;
+	if (is_root)
+	{
+		is_root_ = true;
+		root_all_objects_ = src_objects;
+	}
+
 	auto axis       = static_cast<int>(3 * random_float());
 	auto comparator = (axis == 0) ? box_x_compare : (axis == 1) ? box_y_compare :
 	                                                              box_z_compare;
@@ -39,8 +45,8 @@ BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size
 		std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
 		auto mid = start + object_span / 2;
-		left_    = std::make_shared<BvhNode>(objects, start, mid);
-		right_   = std::make_shared<BvhNode>(objects, mid, end);
+		left_    = std::make_shared<BvhNode>(objects, start, mid, false);
+		right_   = std::make_shared<BvhNode>(objects, mid, end, false);
 	}
 
 	auto box_left  = left_->bounding_box();
@@ -65,6 +71,24 @@ bool BvhNode::hit(const Ray &r, Interval ray_t, HitRecord &rec) const
 Aabb BvhNode::bounding_box() const
 {
 	return box_;
+}
+
+float BvhNode::pdf_value(const glm::vec3 &origin, const glm::vec3 &direction) const
+{
+	auto weight = 1.0f / root_all_objects_.size();
+	auto sum    = 0.0f;
+
+	for (const auto &object : root_all_objects_)
+	{
+		sum += weight * object->pdf_value(origin, direction);
+	}
+	return sum;
+}
+
+glm::vec3 BvhNode::random(const glm::vec3 &origin) const
+{
+	auto index = static_cast<int>(random_float() * root_all_objects_.size());
+	return root_all_objects_[index]->random(origin);
 }
 
 bool BvhNode::box_compare(const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b, int axis)

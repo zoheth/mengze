@@ -85,6 +85,6 @@ void Triangle::set_bounding_box()
 
 	glm::vec3 max_v = glm::max(v0_, glm::max(v1_, v2_));
 
-	b_box_ = Aabb(min_v, max_v);
+	b_box_ = Aabb(min_v, max_v).pad();
 }
 }        // namespace mengze::rt

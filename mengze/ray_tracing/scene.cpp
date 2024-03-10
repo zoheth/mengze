@@ -217,8 +217,15 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 
 		if (material->is_light())
 		{
-			add_light(bvh_tree);
+		    add_light(bvh_tree);
 		}
+		/*for (const auto &triangle : triangles)
+		{
+		    if (material->is_light())
+		    {
+		        add_light(triangle);
+		    }
+		}*/
 	}
 
 	else
