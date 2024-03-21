@@ -111,6 +111,7 @@ void Camera::roaming_update(float delta_time)
 
 	if (moved)
 	{
+		dirty_ = true;
 		update_view_matrix();
 	}
 }

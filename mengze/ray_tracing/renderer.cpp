@@ -4,6 +4,7 @@
 
 #include "core/logging.h"
 #include "core/timer.h"
+#include "ray_tracing/pdf.h"
 
  namespace
 {
@@ -50,6 +51,17 @@ void Renderer::on_resize(uint32_t width, uint32_t height)
 	camera_->on_resize(width, height);
 	camera_->initialize();
 	mengze::Renderer::on_resize(width, height);
+}
+
+void Renderer::on_update(float ts)
+{
+	camera_->on_update(ts);
+
+	if (camera_->is_dirty())
+	{
+		frame_index_ = 1;
+		camera_->set_dirty(false);
+	}
 }
 
 void Renderer::render()
@@ -139,10 +151,10 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 	}
 
 	auto       light = std::make_shared<HittablePdf>(scene_->lights(), rec.position);
-	MixturePdf p(light, scatter_record.pdf);
+	//MixturePdf p(light, scatter_record.pdf);
 
-	Ray  scattered = Ray(rec.position, p.generate());
-	auto pdf_val   = p.value(scattered.direction());
+	Ray  scattered = Ray(rec.position, scatter_record.pdf->generate());
+	auto pdf_val   = scatter_record.pdf->value(scattered.direction());
 
 	float scattering_pdf = rec.material->scattering_pdf(r, rec, scattered);
 

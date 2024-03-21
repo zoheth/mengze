@@ -17,6 +17,9 @@ class Renderer : public mengze::Renderer
 	void set_scene(const std::shared_ptr<mengze::rt::Scene> &scene);
 
 	void on_resize(uint32_t width, uint32_t height) override;
+
+	void on_update(float ts) override;
+
 	void render() override;
 
 	glm::vec3 ray_color(const Ray &r, int depth) const;

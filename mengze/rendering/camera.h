@@ -30,12 +30,16 @@ namespace mengze
 		float get_near() const { return near_; }
 		float get_far() const { return far_; }
 
+		bool is_dirty() const { return dirty_; }
+		void set_dirty(bool dirty) { dirty_ = dirty; }
+
 	private:
 		void roaming_update(float delta_time);
 		void orbit_update(float delta_time);
 		void update_projection_matrix();
 		void update_view_matrix();
 	protected:
+		bool dirty_{ false };
 		glm::mat4 projection_matrix_{ 1.0f };
 		glm::mat4 view_matrix_{ 1.0f };
 		glm::mat4 inverse_projection_matrix_{ 1.0f };

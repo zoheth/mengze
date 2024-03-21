@@ -100,15 +100,6 @@ class OrthoNormalBasis
 	glm::vec3 axis_[3];
 };
 
-class Pdf
-{
-  public:
-	virtual ~Pdf() = default;
-
-	virtual float value(const glm::vec3 &direction) const = 0;
-
-	virtual glm::vec3 generate() const = 0;
-};
 
 inline float random_float(const float min = 0.0f, const float max = 1.0f)
 {
@@ -117,33 +108,6 @@ inline float random_float(const float min = 0.0f, const float max = 1.0f)
 	static std::mt19937                   generator(rd());
 	return distribution(generator);
 }
-
-class CosinePdf : public Pdf
-{
-  public:
-	CosinePdf(const glm::vec3 &w);
-
-	float value(const glm::vec3 &direction) const override;
-
-	glm::vec3 generate() const override;
-
-  private:
-	OrthoNormalBasis uvw_;
-};
-
-class MixturePdf : public Pdf
-{
-  public:
-	MixturePdf(std::shared_ptr<Pdf> p0, std::shared_ptr<Pdf> p1);
-
-	float value(const glm::vec3 &direction) const override;
-
-	glm::vec3 generate() const override;
-
-  private:
-	std::shared_ptr<Pdf> p0_;
-	std::shared_ptr<Pdf> p1_;
-};
 
 inline glm::vec3 random_unit_vector()
 {

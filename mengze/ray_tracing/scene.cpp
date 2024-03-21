@@ -302,6 +302,20 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 	}*/
 
 	aiColor3D color;
+	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_SPECULAR, color))
+	{
+		if (color.r>0.0f||color.g>0.0f||color.b>0.0f)
+		{
+			float shininess;
+
+			if (AI_SUCCESS == ai_material->Get(AI_MATKEY_SHININESS, shininess))
+			{
+				aiColor3D color2;
+				ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color2);
+				return std::make_shared<PhongMaterial>(glm::vec3(color2.r, color2.g, color2.b), glm::vec3(color.r, color.g, color.b), shininess);
+			}
+		}
+	}
 	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 	{
 		return std::make_shared<Lambertian>(glm::vec3(color.r, color.g, color.b));

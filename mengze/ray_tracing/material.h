@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "ray_tracing/math.h"
+#include "ray_tracing/pdf.h"
 #include "ray_tracing/ray.h"
 #include "ray_tracing/texture.h"
 
@@ -71,11 +72,36 @@ class Metal : public Material
 	    fuzz_(fuzz < 1.0 ? fuzz : 1.0)
 	{}
 
+	static float shininess_to_fuzz(float shininess);
+
 	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
 
   private:
 	glm::vec3 albedo_;
 	float     fuzz_;
+};
+
+class PhongMaterial : public Material
+{
+  public:
+	PhongMaterial(const glm::vec3 &kd, const glm::vec3 &ks, float ns) :
+	    diffuse_color_(kd),
+	    specular_color_(ks),
+	    shininess_(ns)
+	{}
+
+	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
+
+	float scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const override;
+
+  private:
+	glm::vec3 diffuse_color_;
+	glm::vec3 specular_color_;
+	float     shininess_;
+
+	static float reflectance(float cosine, float shininess);
+
+	static glm::vec3 fuzz(float shininess);
 };
 
 class Dielectric : public Material
@@ -130,7 +156,7 @@ class DiffuseLight : public Material
 
 class MaterialLibrary
 {
-public:
+  public:
 	std::shared_ptr<Material> get(const std::string &name) const;
 
 	void add(const std::string &name, const std::shared_ptr<Material> &material);
