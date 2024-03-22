@@ -1,11 +1,14 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 #include <assimp/scene.h>
 
 #include "ray_tracing/hittable.h"
 #include "ray_tracing/camera.h"
+
+namespace fs = std::filesystem;
 
 namespace mengze::rt
 {
@@ -70,6 +73,7 @@ private:
 
 	std::shared_ptr<Camera> camera_;
 
+	fs::path file_path_;
 	MaterialLibrary material_library_;
 };
 }        // namespace mengze::rt

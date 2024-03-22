@@ -39,6 +39,11 @@ class Material
 		return glm::vec3(0.0f);
 	}
 
+	virtual glm::vec3 debug_color(float u, float v, const glm::vec3 &p) const
+	{
+		return glm::vec3(0.0f);
+	}
+
 	virtual bool is_light() const
 	{
 		return false;
@@ -57,6 +62,8 @@ class Lambertian : public Material
 	{}
 
 	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
+
+	glm::vec3 debug_color(float u, float v, const glm::vec3 &p) const override;
 
 	float scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const override;
 
@@ -84,9 +91,15 @@ class Metal : public Material
 class PhongMaterial : public Material
 {
   public:
+	PhongMaterial(const std::shared_ptr<Texture> &kd, const std::shared_ptr<Texture> &ks, float ns) :
+	    diffuse_texture_(kd),
+	    specular_texture_(ks),
+	    shininess_(ns)
+	{}
+
 	PhongMaterial(const glm::vec3 &kd, const glm::vec3 &ks, float ns) :
-	    diffuse_color_(kd),
-	    specular_color_(ks),
+	    diffuse_texture_(std::make_shared<SolidColor>(kd)),
+	    specular_texture_(std::make_shared<SolidColor>(ks)),
 	    shininess_(ns)
 	{}
 
@@ -94,10 +107,12 @@ class PhongMaterial : public Material
 
 	float scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const override;
 
+	glm::vec3 debug_color(float u, float v, const glm::vec3 &p) const override;
+
   private:
-	glm::vec3 diffuse_color_;
-	glm::vec3 specular_color_;
-	float     shininess_;
+	std::shared_ptr<Texture> diffuse_texture_;
+	std::shared_ptr<Texture> specular_texture_;
+	float                    shininess_;
 
 	static float reflectance(float cosine, float shininess);
 
@@ -107,9 +122,7 @@ class PhongMaterial : public Material
 class Dielectric : public Material
 {
   public:
-	Dielectric(float refraction_index) :
-	    refraction_index_(refraction_index)
-	{}
+	Dielectric(float refraction_index);
 
 	bool scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override;
 

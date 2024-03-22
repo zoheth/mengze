@@ -1,6 +1,7 @@
 #include "ray_tracing/bvh.h"
 
 #include <execution>
+#include <future>
 
 #include "scene.h"
 
@@ -10,12 +11,12 @@ BvhNode::BvhNode(const HittableList &list) :
     BvhNode(list.objects(), 0, list.objects().size())
 {}
 
-BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end, bool is_root)
+BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size_t start, size_t end, bool is_root, int depth)
 {
 	auto objects = src_objects;
 	if (is_root)
 	{
-		is_root_ = true;
+		is_root_          = true;
 		root_all_objects_ = src_objects;
 	}
 
@@ -44,12 +45,30 @@ BvhNode::BvhNode(const std::vector<std::shared_ptr<Hittable>> &src_objects, size
 	}
 	else
 	{
-		//std::sort(std::execution::par, objects.begin() + start, objects.begin() + end, comparator);
+		// if (object_span > 10000)
+		//	std::sort(std::execution::par, objects.begin() + start, objects.begin() + end, comparator);
+		// else
 		std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
 		auto mid = start + object_span / 2;
-		left_    = std::make_shared<BvhNode>(objects, start, mid, false);
-		right_   = std::make_shared<BvhNode>(objects, mid, end, false);
+
+		if (depth < 5)
+		{
+			auto future_left  = std::async(std::launch::async, [&]() {
+                return std::make_shared<BvhNode>(objects, start, mid, false, depth + 1);
+            });
+			auto future_right = std::async(std::launch::async, [&]() {
+				return std::make_shared<BvhNode>(objects, mid, end, false, depth + 1);
+			});
+			left_             = future_left.get();
+			right_            = future_right.get();
+		}
+		else
+		{
+			left_  = std::make_shared<BvhNode>(objects, start, mid, false, depth + 1);
+			right_ = std::make_shared<BvhNode>(objects, mid, end, false, depth + 1);	
+		}
+		
 	}
 
 	auto box_left  = left_->bounding_box();

@@ -19,18 +19,18 @@ glm::vec3 CosinePdf::generate() const
 	return uvw_.to_local(random_cosine_direction());
 }
 
-MixturePdf::MixturePdf(std::shared_ptr<Pdf> p0, std::shared_ptr<Pdf> p1) :
-    p0_(std::move(p0)), p1_(std::move(p1))
+MixturePdf::MixturePdf(std::shared_ptr<Pdf> p0, std::shared_ptr<Pdf> p1, float wight) :
+    p0_(std::move(p0)), p1_(std::move(p1)), wight_(wight)
 {}
 
 float MixturePdf::value(const glm::vec3 &direction) const
 {
-	return 0.5f * p0_->value(direction) + 0.5f * p1_->value(direction);
+	return wight_ * p0_->value(direction) + (1-wight_) * p1_->value(direction);
 }
 
 glm::vec3 MixturePdf::generate() const
 {
-	if (random_float() < 0.5f)
+	if (random_float() < wight_)
 		return p0_->generate();
 	else
 		return p1_->generate();
@@ -58,11 +58,6 @@ float PhongPdf::value(const glm::vec3 &direction) const
 	cos_alpha = glm::clamp(cos_alpha, 0.0f, 1.0f);
 
 	float specular = ks_ * (ns_ + 2) / (2 * glm::pi<float>()) * pow(cos_alpha, ns_);
-
-	if (specular > 10 )
-	{
-		int a = 0;
-	}
 
 	return diffuse + specular;
 }

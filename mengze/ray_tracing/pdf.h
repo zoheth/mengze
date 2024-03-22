@@ -29,7 +29,7 @@ class CosinePdf : public Pdf
 class MixturePdf : public Pdf
 {
   public:
-	MixturePdf(std::shared_ptr<Pdf> p0, std::shared_ptr<Pdf> p1);
+	MixturePdf(std::shared_ptr<Pdf> p0, std::shared_ptr<Pdf> p1, float wight = 0.5);
 
 	float value(const glm::vec3 &direction) const override;
 
@@ -38,6 +38,8 @@ class MixturePdf : public Pdf
   private:
 	std::shared_ptr<Pdf> p0_;
 	std::shared_ptr<Pdf> p1_;
+
+	float wight_{0.5};
 };
 
 class PhongPdf : public Pdf

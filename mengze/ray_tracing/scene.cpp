@@ -74,6 +74,8 @@ bool HittableList::empty() const
 
 void Scene::parse_3d_model(const std::string &file_path)
 {
+	fs::path path_obj(file_path);
+	file_path_ = path_obj.parent_path();
 	Assimp::Importer importer;
 	const aiScene   *ai_scene = importer.ReadFile(file_path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -205,7 +207,7 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 
 #define SIMPLIFY_BOX 0
 #if SIMPLIFY_BOX
-	if (mesh->mNumVertices > 20)
+	if (mesh->mNumVertices > 20000)
 	{
 		return;
 	}
@@ -229,21 +231,20 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		const auto &v1 = vertices[face.mIndices[1]];
 		const auto &v2 = vertices[face.mIndices[2]];
 
-		// triangle_list->add(std::make_shared<Triangle>(v0, v1, v2, material));
-		/*add(std::make_shared<Triangle>(v0, v1, v2, material));
-		if (material->is_light())
+
+		if (mesh->HasTextureCoords(0))
 		{
-		    add_light(std::make_shared<Triangle>(v0, v1, v2, material));
-		}*/
-
-		triangles.push_back(std::make_shared<Triangle>(v0, v1, v2, material));
+			std::array<glm::vec2, 3> uv;
+			uv[0] = glm::vec2(mesh->mTextureCoords[0][face.mIndices[0]].x, mesh->mTextureCoords[0][face.mIndices[0]].y);
+			uv[1] = glm::vec2(mesh->mTextureCoords[0][face.mIndices[1]].x, mesh->mTextureCoords[0][face.mIndices[1]].y);
+			uv[2] = glm::vec2(mesh->mTextureCoords[0][face.mIndices[2]].x, mesh->mTextureCoords[0][face.mIndices[2]].y);
+			triangles.push_back(std::make_shared<Triangle>(v0, v1, v2, material, uv));
+		}
+		else
+		{
+			triangles.push_back(std::make_shared<Triangle>(v0, v1, v2, material, std::nullopt));
+		}
 	}
-
-	/*add(triangle_list);
-	if (material->is_light())
-	{
-	    add_light(triangle_list);
-	}*/
 
 	if (triangles.size() > 0)
 	{
@@ -254,13 +255,6 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 		{
 			add_light(bvh_tree);
 		}
-		/*for (const auto &triangle : triangles)
-		{
-		    if (material->is_light())
-		    {
-		        add_light(triangle);
-		    }
-		}*/
 	}
 
 	else
@@ -304,7 +298,7 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 	aiColor3D color;
 	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_SPECULAR, color))
 	{
-		if (color.r>0.0f||color.g>0.0f||color.b>0.0f)
+		if (color.r > 0.0f || color.g > 0.0f || color.b > 0.0f)
 		{
 			float shininess;
 
@@ -312,12 +306,30 @@ std::shared_ptr<Material> Scene::process_material(const aiMaterial *ai_material)
 			{
 				aiColor3D color2;
 				ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color2);
+				if (color2.r == 0.0f && color2.g == 0.0f && color2.b == 0.0f)
+				{
+					return std::make_shared<Metal>(glm::vec3(color.r, color.g, color.b), 0);
+				}
 				return std::make_shared<PhongMaterial>(glm::vec3(color2.r, color2.g, color2.b), glm::vec3(color.r, color.g, color.b), shininess);
 			}
 		}
 	}
+	if (ai_material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+	{
+		aiString texture_path;
+		ai_material->GetTexture(aiTextureType_DIFFUSE, 0, &texture_path);
+		fs::path path_str = file_path_ / texture_path.C_Str();
+		return std::make_shared<Lambertian>(std::make_shared<ImageTexture>(path_str.string()));
+
+
+	}
 	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 	{
+		float refractive_index = 1.0f;
+		if (AI_SUCCESS == ai_material->Get(AI_MATKEY_REFRACTI, refractive_index) && refractive_index>1.0f)
+		{
+			return std::make_shared<Dielectric>(refractive_index);
+		}
 		return std::make_shared<Lambertian>(glm::vec3(color.r, color.g, color.b));
 	}
 }

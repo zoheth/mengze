@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <array>
+#include <optional>
 
 #include <glm/glm.hpp>
 
@@ -12,7 +14,7 @@ namespace mengze::rt
 class Triangle : public Hittable
 {
   public:
-	Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const std::shared_ptr<Material> &material);
+	Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const std::shared_ptr<Material> &material, const std::optional<std::array<glm::vec2, 3>> &uv);
 
 	bool hit(const Ray &r, Interval ray_t, HitRecord &rec) const override;
 
@@ -31,6 +33,7 @@ private:
 	glm::vec3 v1_;
 	glm::vec3 v2_;
 	glm::vec3 normal_;
+	std::optional < std::array<glm::vec2, 3>> uv_;
 	float     area_;
 
 	Aabb                      b_box_;

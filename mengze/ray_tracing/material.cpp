@@ -22,6 +22,12 @@ bool Lambertian::scatter(const Ray &ray_in, const HitRecord &hit_record, Scatter
 	return true;
 }
 
+glm::vec3 Lambertian::debug_color(float u, float v, const glm::vec3 &p) const
+{
+	return albedo_->value(u, v, p);
+}
+
+
 float Lambertian::scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const
 {
 	auto cosine = glm::dot(hit_record.normal, glm::normalize(scattered.direction()));
@@ -50,10 +56,10 @@ bool Metal::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecor
 
 bool PhongMaterial::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const
 {
-	scatter_record.attenuation = specular_color_;
+	scatter_record.attenuation = specular_texture_->value(hit_record.u, hit_record.v, hit_record.position);
 	scatter_record.skip_pdf    = false;
-	float ks                   = rgb_to_luminance(specular_color_);
-	float kd                   = rgb_to_luminance(diffuse_color_);
+	float ks                   = rgb_to_luminance(specular_texture_->value(hit_record.u, hit_record.v, hit_record.position));
+	float kd                   = rgb_to_luminance(diffuse_texture_->value(hit_record.u, hit_record.v, hit_record.position));
 	scatter_record.pdf         = std::make_shared<PhongPdf>(hit_record.normal, glm::reflect(glm::normalize(ray_in.direction()), hit_record.normal), shininess_, kd, ks);
 
 	return true;
@@ -61,8 +67,8 @@ bool PhongMaterial::scatter(const Ray &ray_in, const HitRecord &hit_record, Scat
 
 float PhongMaterial::scattering_pdf(const Ray &ray_in, const HitRecord &hit_record, const Ray &scattered) const
 {
-	float ks = rgb_to_luminance(specular_color_);
-	float kd = rgb_to_luminance(diffuse_color_);
+	float ks = rgb_to_luminance(specular_texture_->value(hit_record.u, hit_record.v, hit_record.position));
+	float kd = rgb_to_luminance(diffuse_texture_->value(hit_record.u, hit_record.v, hit_record.position));
 
 	glm::vec3 normalized_direction = glm::normalize(scattered.direction());
 
@@ -84,6 +90,11 @@ float PhongMaterial::scattering_pdf(const Ray &ray_in, const HitRecord &hit_reco
 	return pdf;
 }
 
+glm::vec3 PhongMaterial::debug_color(float u, float v, const glm::vec3 &p) const
+{
+	return diffuse_texture_->value(u, v, p);
+}
+
 float PhongMaterial::reflectance(float cosine, float shininess)
 {
 	// Adjust the model as needed to get a reasonable behavior for your scene
@@ -95,6 +106,10 @@ glm::vec3 PhongMaterial::fuzz(float shininess)
 {
 	return glm::vec3(1.0f - glm::clamp(shininess / 5000.0f, 0.0f, 1.0f));
 }
+
+Dielectric::Dielectric(float refraction_index):
+	refraction_index_(refraction_index)
+{}
 
 bool Dielectric::scatter(const Ray &ray_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const
 {

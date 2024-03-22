@@ -2,9 +2,11 @@
 
 namespace mengze::rt
 {
-Triangle::Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const std::shared_ptr<Material> &material) :
+Triangle::Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const std::shared_ptr<Material> &material, const std::optional<std::array<glm::vec2, 3>> &uv) :
     v0_(v0), v1_(v1), v2_(v2), material_(material)
 {
+	if (uv)
+		uv_ = uv.value();
 	normal_ = glm::normalize(glm::cross(v1_ - v0_, v2_ - v0_));
 	area_   = 0.5f * glm::length(glm::cross(v1_ - v0_, v2_ - v0_));
 	set_bounding_box();
@@ -44,6 +46,13 @@ bool Triangle::hit(const Ray &r, Interval ray_t, HitRecord &rec) const
 	rec.position = r.at(t);
 	rec.material = material_;
 	rec.set_face_normal(r, normal_);
+	if (uv_.has_value())
+	{
+		auto &uv = uv_.value();
+		float w  = 1.0f - u - v;  
+		rec.u = w * uv[0].x + u * uv[1].x + v * uv[2].x;
+		rec.v = w * uv[0].y + u * uv[1].y + v * uv[2].y;
+	}
 	return true;
 }
 

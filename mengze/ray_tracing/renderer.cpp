@@ -142,6 +142,8 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 	ScatterRecord scatter_record;
 	glm::vec3     color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
 
+	//return rec.material->debug_color(rec.u, rec.v, rec.position);
+
 	if (!rec.material->scatter(r, rec, scatter_record))
 		return color_from_emission;
 
@@ -151,10 +153,12 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 	}
 
 	auto       light = std::make_shared<HittablePdf>(scene_->lights(), rec.position);
-	//MixturePdf p(light, scatter_record.pdf);
+	MixturePdf p(light, scatter_record.pdf);
+	Ray  scattered = Ray(rec.position, p.generate());
+	auto pdf_val   = p.value(scattered.direction());
 
-	Ray  scattered = Ray(rec.position, scatter_record.pdf->generate());
-	auto pdf_val   = scatter_record.pdf->value(scattered.direction());
+	//Ray  scattered = Ray(rec.position, scatter_record.pdf->generate());
+	//auto pdf_val   = scatter_record.pdf->value(scattered.direction());
 
 	float scattering_pdf = rec.material->scattering_pdf(r, rec, scattered);
 
