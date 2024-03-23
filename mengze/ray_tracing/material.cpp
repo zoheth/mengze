@@ -76,15 +76,15 @@ float PhongMaterial::scattering_pdf(const Ray &ray_in, const HitRecord &hit_reco
 	if (cos_theta <= 0)
 		return 0;
 
-	float diffuse = kd / glm::pi<float>();
+	float diffuse = 0.5f * cos_theta / glm::pi<float>();
 
-	glm::vec3 reflected = glm::reflect(-normalized_direction, hit_record.normal);
+	glm::vec3 reflected = glm::reflect(ray_in.direction(), hit_record.normal);
 
 	
-	float cos_alpha = glm::dot(glm::normalize(reflected), glm::normalize(ray_in.direction()));
+	float cos_alpha = glm::dot(glm::normalize(reflected), normalized_direction);
 	cos_alpha       = glm::clamp(cos_alpha, 0.0f, 1.0f);
 
-	float specular = ks * (shininess_ + 2) / (2 * glm::pi<float>()) * std::pow(cos_alpha, shininess_);
+	float specular = 0.5f * (shininess_ + 1) / (2 * glm::pi<float>()) * std::pow(cos_alpha, shininess_);
 
 	float pdf = diffuse + specular;
 	return pdf;

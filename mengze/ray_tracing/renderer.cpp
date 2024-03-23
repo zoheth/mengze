@@ -162,6 +162,19 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 
 	float scattering_pdf = rec.material->scattering_pdf(r, rec, scattered);
 
+	 // Russian Roulette
+	float continue_probability = std::max(scatter_record.attenuation.x, std::max(scatter_record.attenuation.y, scatter_record.attenuation.z));
+	if (random_float() < continue_probability)
+	{
+		glm::vec3 sample_color       = ray_color(scattered, depth - 1);
+		glm::vec3 color_from_scatter = scatter_record.attenuation * scattering_pdf * sample_color / pdf_val / continue_probability;
+		return color_from_emission + color_from_scatter;
+	}
+	else
+	{
+		return color_from_emission;
+	}
+
 	glm::vec3 sample_color       = ray_color(scattered, depth - 1);
 	glm::vec3 color_from_scatter = scatter_record.attenuation * scattering_pdf * sample_color / pdf_val;
 

@@ -50,14 +50,13 @@ float PhongPdf::value(const glm::vec3 &direction) const
 	if (cos_theta <= 0)
 		return 0;
 
-	float diffuse = kd_ / glm::pi<float>();
+	float diffuse = 0.5f * cos_theta / glm::pi<float>();
 
-	glm::vec3 reflected = glm::reflect(-normalized_direction, uvw_.w());
 
-	float cos_alpha = glm::dot(glm::normalize(reflected), reflect_dir_);
+	float cos_alpha = glm::dot(normalized_direction, reflect_dir_);
 	cos_alpha = glm::clamp(cos_alpha, 0.0f, 1.0f);
 
-	float specular = ks_ * (ns_ + 2) / (2 * glm::pi<float>()) * pow(cos_alpha, ns_);
+	float specular = 0.5f * (ns_ + 1) / (2 * glm::pi<float>()) * pow(cos_alpha, ns_);
 
 	return diffuse + specular;
 }

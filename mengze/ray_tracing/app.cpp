@@ -54,7 +54,10 @@ void ray_tracing_app_setup(mengze::Application &app)
 
 #else
 
-
+	//scene->parse_xml("example-scenes-cg22\\veach-mis\\veach-mis.xml");
+	//scene->parse_3d_model("example-scenes-cg22\\veach-mis\\veach-mis.obj");
+	// scene->parse_xml("example-scenes-cg22\\staircase\\staircase.xml");
+	// scene->parse_3d_model("example-scenes-cg22\\staircase\\stairscase.obj");
 	//scene->parse_xml("example-scenes-cg23\\cornell-box\\cornell-box.xml");
 	//scene->parse_3d_model("example-scenes-cg23\\cornell-box\\cornell-box.obj");
 	scene->parse_xml("example-scenes-cg23\\bathroom\\bathroom.xml");
@@ -62,7 +65,7 @@ void ray_tracing_app_setup(mengze::Application &app)
 	//scene->parse_xml("example-scenes-cg23\\veach-mis\\veach-mis.xml");
 	//scene->parse_3d_model("example-scenes-cg23\\veach-mis\\veach-mis.obj");
 
-	auto renderer = std::make_shared<Renderer>(scene->camera(), 200, 5);
+	auto renderer = std::make_shared<Renderer>(scene->camera(), 500, 10);
 #endif
 
 	renderer->set_scene(scene);
