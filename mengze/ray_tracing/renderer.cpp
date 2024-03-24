@@ -122,11 +122,6 @@ void Renderer::render()
 
 glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 {
-	if (scene_->lights().empty())
-	{
-		LOGE("No light in the scene");
-		return glm::vec3{0, 0, 0};
-	}
 
 	if (depth <= 0)
 		return glm::vec3{0, 0, 0};
@@ -138,11 +133,17 @@ glm::vec3 Renderer::ray_color(const Ray &r, int depth) const
 		return glm::vec3{0, 0, 0};
 	}
 
-	// return glm::vec3{1, 0, 0};
+	//return glm::vec3{1, 0, 0};
 	ScatterRecord scatter_record;
 	glm::vec3     color_from_emission = rec.material->emitted(rec.u, rec.v, rec.position);
 
 	//return rec.material->debug_color(rec.u, rec.v, rec.position);
+
+	if (scene_->lights().empty())
+	{
+		LOGE("No light in the scene");
+		return glm::vec3{0, 0, 0};
+	}
 
 	if (!rec.material->scatter(r, rec, scatter_record))
 		return color_from_emission;

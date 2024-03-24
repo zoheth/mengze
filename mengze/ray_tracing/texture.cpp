@@ -62,14 +62,19 @@ glm::vec3 rt::ImageTexture::value(float u, float v, const glm::vec3 &p) const
 {
 	if (image_.width() == 0 || image_.height() == 0)
 	{
-		return glm::vec3(0.0f, 0.1f,0.1f);
+		return glm::vec3(0.0f, 0.1f, 0.1f);
 	}
 
-	u = Interval(0,1).clamp(u);
-	v = 1.0f - Interval(0,1).clamp(v);
+	u = fmod(u, 1.0f);
+	if (u < 0)
+		u += 1.0f;
+	v = fmod(v, 1.0f);
+	if (v < 0)
+		v += 1.0f;
 
-	auto i = static_cast<int>(u * image_.width());
-	auto j = static_cast<int>(v * image_.height());
+	auto i = static_cast<int>(u * image_.width()) % image_.width();
+	auto j = static_cast<int>((1.0f - v) * image_.height()) % image_.height();
+
 	auto pixel = image_.pixel_data(i, j);
 
 	auto color_scale = 1.0f / 255.0f;

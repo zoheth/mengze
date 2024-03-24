@@ -192,6 +192,8 @@ void Scene::process_mesh(const aiMesh *mesh, const aiScene *scene)
 {
 	LOGI("Processing mesh: {}", mesh->mName.C_Str())
 	/*std::shared_ptr<HittableList> triangle_list = std::make_shared<HittableList>();*/
+	//if (strcmp(mesh->mName.C_Str(), "Floor")!=0)
+	//	return;
 
 	std::vector<std::shared_ptr<Hittable>> triangles;
 
