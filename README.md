@@ -14,6 +14,40 @@
 `.\build\mengze\Release\mengze.exe`
 
 ---
+<a name="JDXqp"></a>
+## 蒙特卡洛光线追踪
+<a name="KiKOj"></a>
+##### 特性：
+多重重要性采样<br />并行构建BVH<br />并行渲染，**在只使用CPU的情况下，10万面片，10次弹射，1024x1024分辨率每像素采样一次只需要30-40毫秒**<br />三角形求交使用Moller-Trumbore算法<br />使用累积的方式，每一次采样都可以实时看到效果，且每一帧都有进度显示<br />可交互，按住鼠标右键可以使用鼠标和`Q,W,E,A,S,D`键漫游场景，每次转换视角都会重新开始采样，文件中有演示视频。
+<a name="bJcFC"></a>
+##### 关于材质：
+共实现了四种材质，只有漫反射的Lambertian材质，Phone模型材质，没有漫反射的金属材质和有折射的模拟玻璃的电介质材质。前两者具有和brdf相关的pdf，可以根据pdf采样并调整权重确保收敛。后两者不使用pdf，直接采样光线。
+<a name="Iyyzk"></a>
+##### 关于精度：
+最开始时考虑使用GPU实现，所以所有计算都使用了32位浮点数。遇到了一些精度问题，在有累乘累加的地方考虑了使用数值稳定的算法，多次Bonce的舍入问题通过俄罗斯轮盘赌解决，但仍然存在一些问题。
+<a name="LMEOP"></a>
+## 效果展示：
+<a name="JAKWG"></a>
+### 场景一
+![100 sample 无光源重要性采样 23s](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711701196695-4b97d278-7c59-461e-a7d7-769315de3eec.png#averageHue=%232b2b2b&clientId=u767d2b15-1124-4&from=paste&height=224&id=ufdf7b1a4&originHeight=864&originWidth=1275&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=845651&status=done&style=none&taskId=u3b70d667-8ca7-44b4-afd4-461ef7da7e7&title=100%20sample%20%E6%97%A0%E5%85%89%E6%BA%90%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%2023s&width=330.5625305175781 "100 sample 无光源重要性采样 23s")![40 samples](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711700650004-c69ad98e-d645-4d80-a200-d29218152dce.png#averageHue=%23485258&clientId=u767d2b15-1124-4&from=paste&height=222&id=u0cc94fa9&originHeight=868&originWidth=1275&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=2352590&status=done&style=none&taskId=ua3c1bbe8-a439-4529-96ae-2363360ff5d&title=40%20samples&width=325.5625305175781 "40 samples")![100 samples](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711700820948-d94cd1a3-31f2-4b24-86d8-d30b8f74c28a.png#averageHue=%234b565d&clientId=u767d2b15-1124-4&from=paste&height=263&id=u1f6c13d1&originHeight=864&originWidth=1273&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=2173519&status=done&style=none&taskId=ue32ccc9a-5d10-442e-bb68-470785ac94f&title=100%20samples&width=387.4196472167969 "100 samples")
+<a name="JK9e9"></a>
+##### 解释：
+3092三角形数，BVH构建时间22毫秒。<br />该场景光源面片数量多，目前的实现方式使用光源重要性采样会严重拖慢性能。<br />无光源重要性采样：100samples，23秒<br />多重重要性采样：40samples ，2分6秒<br />多重重要性采样：100samples，5分17秒<br />可以看到使用光源重要性采样，时间增加了12倍，但是多重重要性采样的效果也很明显。40个样本的效果远好于不使用光源重要性采样100个样本。<br />其他场景，加入光源重要性采样对时间的影响不大。
+<a name="Ienju"></a>
+### 场景二
+![100samples](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711702686541-14b78d38-a0be-470f-b7db-ae99b73f7393.png#averageHue=%23816824&clientId=u767d2b15-1124-4&from=paste&height=310&id=u371da387&originHeight=865&originWidth=867&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=1829550&status=done&style=none&taskId=u141d3aa1-e6ab-4622-89b0-8dab48438b5&title=100samples&width=310.4285888671875 "100samples")![300samples](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711702762948-6c465412-6a9f-4433-83f9-caae6c2c4b50.png#averageHue=%23866d25&clientId=u767d2b15-1124-4&from=paste&height=308&id=ud2fa55bf&originHeight=850&originWidth=858&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=1690854&status=done&style=none&taskId=ufb2d2cc3-c0ff-45fb-bb5b-25d08a04a86&title=300samples&width=311.2857360839844 "300samples")
+<a name="ODAMU"></a>
+##### 解释：
+102988三角形数，BVH构建时间31秒<br />该场景只有Lambertian材质<br />100samples，38秒<br />300samples，1分53秒
+<a name="PNu9D"></a>
+### 场景三
+![100sample](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711703512740-f85c97b3-30b9-498d-9b07-cc7bc2404696.png#averageHue=%23797470&clientId=u767d2b15-1124-4&from=paste&height=302&id=u42c2401b&originHeight=866&originWidth=854&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=1511806&status=done&style=none&taskId=u9bd5083d-56f1-43ab-9fa8-167ff794d0d&title=100sample&width=298.0000305175781 "100sample")![300samples](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711704673868-e79cecbe-340c-4f00-8e10-a7bdba97a933.png#averageHue=%237d7873&clientId=u767d2b15-1124-4&from=paste&height=302&id=u46e111a8&originHeight=865&originWidth=855&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=1657253&status=done&style=none&taskId=uac9b9b97-c4a3-4ab8-a074-4ae7fc29fe4&title=300samples&width=298.5703125 "300samples")<br />![窗框的三角形过小](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711768199934-78061f10-1c00-47bb-a990-712cde31c32f.png#averageHue=%236c6c6c&clientId=u7a910e18-825e-4&from=paste&height=302&id=ub76b14ca&originHeight=603&originWidth=453&originalType=binary&ratio=2&rotation=0&showTitle=true&size=172738&status=done&style=none&taskId=u5a886f3e-8482-4abe-8b60-ef2bab47e52&title=%E7%AA%97%E6%A1%86%E7%9A%84%E4%B8%89%E8%A7%92%E5%BD%A2%E8%BF%87%E5%B0%8F&width=226.5 "窗框的三角形过小")<br />
+<a name="Vs1Bz"></a>
+##### 解释：
+592188三角形数，BVH构建时间1分10秒<br />样图的纹理的y轴应该是反的，我在绘制时将其调正。<br />之前墙壁有不正确的黑影，怀疑是因为32位浮点数精度不够，多次乘法导致舍入，加入俄罗斯轮盘赌之后黑影消失。但窗框有不正常的黑色，目前判断可能是因为三角形太小，而我使用32位浮点数精度太低，导致相交判断错误。因为时间原因没来得及验证和修复。<br />100samples，5分32秒<br />300samples，16分40秒
+<a name="ilWQX"></a>
+### 场景四
+![用时10分钟](https://cdn.nlark.com/yuque/0/2024/png/28259721/1711706491365-91d3e1c4-ea1e-4fc1-99cc-b3fb51fbf06c.png#averageHue=%2397835c&clientId=u767d2b15-1124-4&from=paste&height=491&id=ue01042ba&originHeight=860&originWidth=1583&originalType=binary&ratio=1.75&rotation=0&showTitle=true&size=3701406&status=done&style=none&taskId=u3c5ef889-e075-47b8-8a8c-266bb4dfcd1&title=%E7%94%A8%E6%97%B610%E5%88%86%E9%92%9F&width=904.5714285714286 "用时10分钟")<br />去年作业的场景，上图效果只需要10分钟。
 
 ## 面消隐算法
 ![Snipaste_2023-12-11_18-35-35.png](https://cdn.nlark.com/yuque/0/2023/png/28259721/1702344406252-2e8e3579-d9ba-4dd3-b48f-8b86c6ed815a.png#averageHue=%23424242&clientId=u80670079-78b8-4&from=drop&id=u2626a2e3&originHeight=946&originWidth=1602&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=449118&status=done&style=none&taskId=ud4880d4f-5649-416a-9a9a-42497a2ab0b&title=)
